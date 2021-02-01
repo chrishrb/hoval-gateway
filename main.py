@@ -3,7 +3,8 @@ import asyncio
 import logging
 import paho.mqtt.client as mqtt
 
-from gateway.parser import ResponseParser
+from gateway.datapoint import Device
+from gateway.parser import ResponseParser, PeriodicRequest
 
 
 async def main():
@@ -18,6 +19,9 @@ async def main():
     # Create Notifier with an explicit loop to use for scheduling of callbacks
     event_loop = asyncio.get_event_loop()
     notifier = can.Notifier(can0, listeners, loop=event_loop)
+
+    periodic_request = PeriodicRequest(Device(10, 8))
+    periodic_request.start()
 
     message_parser = ResponseParser()
     while True:

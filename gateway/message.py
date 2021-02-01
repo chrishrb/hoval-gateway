@@ -78,6 +78,22 @@ class Message:
             except can.CanError:
                 print("Message NOT sent")
 
+    def send_periodic(self):
+        bus = can.interface.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
+
+        for body in self._message_body:
+            msg = can.Message(arbitration_id=self._arbitration_id,
+                              data=[
+                                  self._message_len, self._operation_id, body.datapoint.function_group,
+                                  body.datapoint.function_number, body.datapoint.datapoint_by_bytes()[0],
+                                  body.datapoint.datapoint_by_bytes()[1], body.data
+                              ],
+                              is_extended_id=True)
+
+            task = bus.send_periodic(msg, settings.PERIODIC_TIME)
+            assert isinstance(task, can.CyclicSendTaskABC)
+            return task
+
 
 class Response:
     def __init__(self, data):

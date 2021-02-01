@@ -1,7 +1,7 @@
 import logging
 
 from gateway import settings
-from gateway.datapoint import Device
+from gateway.datapoint import Device, DatapointList
 from gateway.message import Message, Response, Request
 
 
@@ -40,14 +40,22 @@ class ResponseParser:
         return None
 
 
-class RequestParser:
+class PeriodicRequest:
     _message_len = 1
     _prio = 8160
-    _device = Device(10, 8)
-    _arbitration_id = (_prio << 16) | (_device.device_type << 8) | _device.device_id
     _operation_id = 0x40
+    _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
 
-    def parse(self):
-        message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
-                          operation_id=self._operation_id)
-        message.put(Request("temperature_outside_air"))
+    def __init__(self, device):
+        self._device = device
+        self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
+
+    def start(self):
+        for datapoint in self._datapoint_list.datapoint_list:
+            if not datapoint.send_periodic:
+                continue
+
+            message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
+                              operation_id=self._operation_id)
+            message.put(Request(datapoint.function_name))
+            message.send_periodic()

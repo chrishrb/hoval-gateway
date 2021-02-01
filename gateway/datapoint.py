@@ -4,12 +4,17 @@ from gateway import datatypes
 
 
 class Datapoint:
-    def __init__(self, function_group, datapoint, function_name, datatype, function_number=0):
+    def __init__(self, function_group, datapoint, function_name, datatype, send_periodic=False, function_number=0):
         self._function_group = function_group
         self._datapoint = datapoint
         self._function_name = function_name
         self._datatype = datatype
         self._function_number = function_number
+        self._send_periodic = send_periodic
+
+    @property
+    def send_periodic(self):
+        return self._send_periodic
 
     @property
     def function_name(self):
@@ -35,10 +40,13 @@ class Datapoint:
         return self._datapoint.to_bytes(2, byteorder='big', signed=False)
 
 
-
 class DatapointList:
     def __init__(self, datapoint_list):
         self._datapoint_list = datapoint_list
+
+    @property
+    def datapoint_list(self):
+        return self._datapoint_list
 
     def get_datapoint(self, function_group, function_number, point):
         for datapoint in self._datapoint_list:
