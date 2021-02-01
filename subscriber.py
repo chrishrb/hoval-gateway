@@ -14,7 +14,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     request = OneTimeRequest(Device(10, 8), settings.OPERATIONS["SET_REQUEST"], "lueftungs_modulation")
-    request.start(int.to_bytes(msg.payload.decode(), 1, byteorder='big', signed=False))
+    request.start(int(float(msg.payload.decode())))
     logging.debug("Request sent!")
     client.disconnect()
 
