@@ -15,7 +15,7 @@ class ResponseParser:
             return None
 
         message = Message(msg.arbitration_id, msg.data[0], msg.data[1])
-        if message.operation_id == settings.OPERATIONS["RESPONSE"]:
+        if message.operation_id in settings.OPERATIONS.values():
             if message.device_id not in self._devices:
                 logging.info("New device detected - Id: %d / Type: %d", message.device_id, message.device_type)
                 self._devices[message.device_id] = Device(message.device_id, message.device_type)
@@ -23,7 +23,9 @@ class ResponseParser:
             if message.message_id == 0x1f:
                 if message.message_len == 0:
                     message.put(Response(msg.data))
-                    return message.parse_data()
+                    logging.info(message.parse_data())
+                    if message.operation_id == settings.OPERATIONS["RESPONSE"]:
+                        return message.parse_data()
                 else:
                     self._pending_msg[message.operation_id] = {
                         message
@@ -74,8 +76,12 @@ class OneTimeRequest:
 
     def start(self, data):
         datapoint = self._datapoint_list.get_datapoint_by_name(function_name=self._function_name)
+        if not datapoint:
+            return
 
         message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
                           operation_id=self._operation_id)
-        message.put(Request(datapoint.function_name, data))
+        request = Request(datapoint.function_name, data)
+        message.put(request)
         message.send()
+        logging.debug("Request sent with data %s", str(data))

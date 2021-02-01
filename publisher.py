@@ -38,7 +38,7 @@ async def main():
         msg = await reader.get_message()
         parsed = message_parser.parse(msg)
         if parsed:
-            logging.info(parsed)
+            logging.info("hoval-gw/" + str(parsed[0]) + str(parsed[1]) + "/status")
             client.publish("hoval-gw/" + str(parsed[0]) + str(parsed[1]) + "/status")
 
     # Clean-up
