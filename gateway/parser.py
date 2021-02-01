@@ -23,5 +23,13 @@ class Parser:
                     self._pending_msg[message.operation_id] = {
                         message
                     }
+            else:
+                msg_header = msg.data[0]
+                if msg_header in self._pending_msg:
+                    message = self._pending_msg[msg_header]
+                    message.put(Response(msg.data))
+                    if message.nb_remaining == 0:
+                        del self._pending_msg[msg_header]
+                        return message.parse_data()
 
         return None
