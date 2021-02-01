@@ -23,3 +23,14 @@ class Signed(Datatype):
     def convert(self, value):
         val = int.from_bytes(value, byteorder='big', signed=True)
         return val * 10 ** (-self._decimal)
+
+
+class List(Datatype):
+    def convert(self, value):
+        val = int.from_bytes(value, byteorder='big', signed=False)
+        return val
+
+
+class String(Datatype):
+    def convert(self, value):
+        return value.decode('utf-8')

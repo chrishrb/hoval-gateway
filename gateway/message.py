@@ -28,7 +28,7 @@ class Message:
         return self._operation_id
 
     def put(self, body):
-        if self._operation_id in settings.OPERATIONS:
+        if self._operation_id in settings.OPERATIONS.values():
             self._message_body.append(body)
 
     def parse_data(self):
@@ -41,22 +41,22 @@ class Message:
             point = body.datapoint
             data.append(body.data)
 
-        if data and point:
+        if data and point is not None:
             return point.function_name, point.datapoint.datatype.convert(data)
-        else:
-            logging.debug("No know point found for (%d, %d, %d), len %d", point.function_group,
-                          point.function_number, point.function_name, len(data))
 
         return None
 
 
 class Response:
     def __init__(self, data):
-        datapoint_list = DatapointList()
+        datapoint_list = DatapointList(settings.DATAPOINT_LIST)
         function_group = data[2]
         function_number = data[3]
         function_datapoint = int.from_bytes(data[4:6], byteorder='big', signed=False)
         self._datapoint = datapoint_list.get_datapoint(function_group, function_number, function_datapoint)
+        if self._datapoint is None:
+            logging.debug("No know point found for (%d, %d, %d), len %d", function_group,
+                          function_number, function_datapoint, len(data))
         self._data = data
 
     @property

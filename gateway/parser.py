@@ -14,7 +14,7 @@ class Parser:
             return None
 
         message = Message(msg.arbitration_id, msg.data[0], msg.data[1])
-        if message.operation_id in settings.OPERATIONS:
+        if message.operation_id in settings.OPERATIONS.values():
             if message.message_id == 0x1f:
                 if message.message_len == 0:
                     message.put(Response(msg.data))
