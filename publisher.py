@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 from gateway import settings
 from gateway.datapoint import Device
-from gateway.parser import ResponseParser, PeriodicRequest
+from gateway.parser import ResponseParser, Request
 
 
 async def main():
@@ -25,7 +25,7 @@ async def main():
     message_parser = ResponseParser()
 
     # Periodic Requests
-    periodic_request = PeriodicRequest(Device(10, 8))
+    periodic_request = Request(Device(10, 8))
     periodic_request.start()
 
     # MQTT Client
@@ -39,7 +39,7 @@ async def main():
         parsed = message_parser.parse(msg)
         if parsed:
             logging.info(parsed)
-            client.publish("hoval-gw/" + parsed[0], parsed[1])
+            client.publish("hoval-gw/" + parsed[0], parsed[1] + "/status")
 
     # Clean-up
     notifier.stop()

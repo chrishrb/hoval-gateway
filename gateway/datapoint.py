@@ -4,13 +4,23 @@ from gateway import datatypes
 
 
 class Datapoint:
-    def __init__(self, function_group, datapoint, function_name, datatype, send_periodic=False, function_number=0):
+    def __init__(self, function_group, datapoint, function_name, datatype, function_number=0, **kwargs):
         self._function_group = function_group
         self._datapoint = datapoint
         self._function_name = function_name
         self._datatype = datatype
         self._function_number = function_number
-        self._send_periodic = send_periodic
+        self._send_periodic = False
+        self._set = False
+
+        if kwargs["send_periodic"]:
+            self._send_periodic = kwargs["send_periodic"]
+        if kwargs["set"]:
+            self._set = kwargs["set"]
+
+    @property
+    def subscribe(self):
+        return self._set
 
     @property
     def send_periodic(self):

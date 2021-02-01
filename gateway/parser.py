@@ -43,7 +43,7 @@ class ResponseParser:
 class PeriodicRequest:
     _message_len = 1
     _prio = 8160
-    _operation_id = 0x40
+    _operation_id = settings.OPERATIONS["GET_REQUEST"]
     _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
 
     def __init__(self, device):
@@ -59,3 +59,23 @@ class PeriodicRequest:
                               operation_id=self._operation_id)
             message.put(Request(datapoint.function_name))
             message.send_periodic()
+
+
+class OneTimeRequest:
+    _message_len = 1
+    _prio = 8160
+    _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
+
+    def __init__(self, device, operation, function_name):
+        self._device = device
+        self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
+        self._function_name = function_name
+        self._operation_id = operation
+
+    def start(self):
+        datapoint = self._datapoint_list.get_datapoint_by_name(function_name=self._function_name)
+
+        message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
+                          operation_id=self._operation_id)
+        message.put(Request(datapoint.function_name))
+        message.send()
