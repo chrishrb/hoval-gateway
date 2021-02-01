@@ -3,7 +3,7 @@ import asyncio
 import logging
 import paho.mqtt.client as mqtt
 
-from gateway.parser import Parser
+from gateway.parser import ResponseParser
 
 
 async def main():
@@ -19,7 +19,7 @@ async def main():
     event_loop = asyncio.get_event_loop()
     notifier = can.Notifier(can0, listeners, loop=event_loop)
 
-    message_parser = Parser()
+    message_parser = ResponseParser()
     while True:
         # Wait for next message from AsyncBufferedReader
         msg = await reader.get_message()

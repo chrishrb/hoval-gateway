@@ -1,20 +1,29 @@
 import logging
 
+import can
+
 from gateway import settings
 from gateway.datapoint import DatapointList
 
 
 class Message:
-    _message_body = list()
-
     def __init__(self, arbitration_id, message_len, operation_id):
+        self._message_body = list()
         self._arbitration_id = arbitration_id
         self._message_id = arbitration_id >> 24
         self._device_type = (arbitration_id >> 8) & 0xff
         self._device_id = arbitration_id & 0xff
         self._message_len = message_len >> 3
-        self._nb_remaining = message_len+1
+        self._nb_remaining = message_len + 1
         self._operation_id = operation_id
+
+    @property
+    def device_type(self):
+        return self._device_type
+
+    @property
+    def device_id(self):
+        return self._device_id
 
     @property
     def message_id(self):
@@ -52,6 +61,23 @@ class Message:
 
         return None
 
+    def send(self):
+        bus = can.interface.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
+
+        for body in self._message_body:
+            msg = can.Message(arbitration_id=self._arbitration_id,
+                              data=[
+                                  self._message_len, self._operation_id, body.datapoint.function_group,
+                                  body.datapoint.function_number, body.datapoint.datapoint_by_bytes()[0],
+                                  body.datapoint.datapoint_by_bytes()[1], body.data
+                              ],
+                              is_extended_id=True)
+            try:
+                bus.send(msg)
+                print("Message sent on {}".format(bus.channel_info))
+            except can.CanError:
+                print("Message NOT sent")
+
 
 class Response:
     def __init__(self, data):
@@ -75,5 +101,9 @@ class Response:
 
 
 class Request:
-    def __init__(self, operation_id, function_name, data):
-        pass
+    def __init__(self, function_name, data=0):
+        datapoint_list = DatapointList(settings.DATAPOINT_LIST)
+        self._datapoint = datapoint_list.get_datapoint_by_name(function_name=function_name)
+        self._data = data
+        if self._datapoint is None:
+            logging.error("No point found for %s", function_name)

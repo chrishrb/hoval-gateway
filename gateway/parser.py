@@ -1,10 +1,11 @@
 import logging
 
 from gateway import settings
-from gateway.message import Message, Response
+from gateway.datapoint import Device
+from gateway.message import Message, Response, Request
 
 
-class Parser:
+class ResponseParser:
     _pending_msg = {}
     _devices = {}
 
@@ -15,6 +16,10 @@ class Parser:
 
         message = Message(msg.arbitration_id, msg.data[0], msg.data[1])
         if message.operation_id in settings.OPERATIONS.values():
+            if message.device_id not in self._devices:
+                logging.info("New device detected - Id: %d / Type: %d", message.device_id, message.device_type)
+                self._devices[message.device_id] = Device(message.device_id, message.device_type)
+
             if message.message_id == 0x1f:
                 if message.message_len == 0:
                     message.put(Response(msg.data))
@@ -33,3 +38,16 @@ class Parser:
                         return message.parse_data()
 
         return None
+
+
+class RequestParser:
+    _message_len = 1
+    _prio = 8160
+    _device = Device(10, 8)
+    _arbitration_id = (_prio << 16) | (_device.device_type << 8) | _device.device_id
+    _operation_id = 0x40
+
+    def parse(self):
+        message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
+                          operation_id=self._operation_id)
+        message.put(Request("temperature_outside_air"))

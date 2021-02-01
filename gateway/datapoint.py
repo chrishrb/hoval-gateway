@@ -31,6 +31,10 @@ class Datapoint:
     def datatype(self):
         return self._datatype
 
+    def datapoint_by_bytes(self):
+        return self._datapoint.to_bytes(2, byteorder='big', signed=False)
+
+
 
 class DatapointList:
     def __init__(self, datapoint_list):
@@ -48,3 +52,17 @@ class DatapointList:
             if datapoint.function_name == function_name:
                 return datapoint
         return None
+
+
+class Device:
+    def __init__(self, device_type, device_id):
+        self._device_type = device_type
+        self._device_id = device_id
+
+    @property
+    def device_type(self):
+        return self._device_type
+
+    @property
+    def device_id(self):
+        return self._device_id
