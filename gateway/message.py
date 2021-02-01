@@ -123,3 +123,12 @@ class Request:
         self._data = data
         if self._datapoint is None:
             logging.error("No point found for %s", function_name)
+
+    @property
+    def datapoint(self):
+        return self._datapoint
+
+    @property
+    def data(self):
+        return self._data
+

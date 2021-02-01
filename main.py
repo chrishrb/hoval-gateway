@@ -3,6 +3,7 @@ import asyncio
 import logging
 import paho.mqtt.client as mqtt
 
+from gateway import settings
 from gateway.datapoint import Device
 from gateway.parser import ResponseParser, PeriodicRequest
 
@@ -20,17 +21,25 @@ async def main():
     event_loop = asyncio.get_event_loop()
     notifier = can.Notifier(can0, listeners, loop=event_loop)
 
+    # Message Parser
+    message_parser = ResponseParser()
+
+    # Periodic Requests
     periodic_request = PeriodicRequest(Device(10, 8))
     periodic_request.start()
 
-    message_parser = ResponseParser()
+    # MQTT Client
+    client = mqtt.Client("hoval-client")
+    client.username_pw_set(username=settings.MQTT["BROKER_USERNAME"], password=settings.MQTT["BROKER_PASSWORD"])
+    client.connect(settings.MQTT["BROKER"])
+
     while True:
         # Wait for next message from AsyncBufferedReader
         msg = await reader.get_message()
         parsed = message_parser.parse(msg)
         if parsed:
             logging.info(parsed)
-            print("hoval-gw/" + parsed[0], parsed[1])
+            client.publish("hoval-gw/" + parsed[0], parsed[1])
 
     # Clean-up
     notifier.stop()
