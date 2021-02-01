@@ -15,7 +15,7 @@ class ResponseParser:
             return None
 
         message = Message(msg.arbitration_id, msg.data[0], msg.data[1])
-        if message.operation_id in settings.OPERATIONS.values():
+        if message.operation_id == settings.OPERATIONS["RESPONSE"]:
             if message.device_id not in self._devices:
                 logging.info("New device detected - Id: %d / Type: %d", message.device_id, message.device_type)
                 self._devices[message.device_id] = Device(message.device_id, message.device_type)
