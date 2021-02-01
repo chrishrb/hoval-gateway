@@ -13,18 +13,23 @@ class Datapoint:
         self._datatype = datatype
         self._function_number = function_number
 
+    @property
     def function_name(self):
         return self._function_name
 
+    @property
     def function_group(self):
         return self._function_group
 
+    @property
     def function_number(self):
         return self._function_number
 
+    @property
     def datapoint(self):
         return self._datapoint
 
+    @property
     def datatype(self):
         return self._datatype
 

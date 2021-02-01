@@ -15,12 +15,15 @@ class Message:
         self._message_len = message_len >> 3
         self._operation_id = operation_id
 
+    @property
     def message_id(self):
         return self._message_id
 
+    @property
     def message_len(self):
         return self._message_len
 
+    @property
     def operation_id(self):
         return self._operation_id
 
@@ -56,9 +59,11 @@ class Response:
         self._datapoint = datapoint_list.get_datapoint(function_group, function_number, function_datapoint)
         self._data = data
 
+    @property
     def data(self):
         return self._data
 
+    @property
     def datapoint(self):
         return self._datapoint
 
