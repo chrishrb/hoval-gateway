@@ -33,9 +33,9 @@ DATAPOINT_LIST = {
     Datapoint(function_group=50, datapoint=39652, function_name="status_lueftungsregulierung",
               datatype=datatypes.Unsigned(1)),
     Datapoint(function_group=50, datapoint=0, function_name="temperature_outside_air", datatype=datatypes.Signed(1),
-              send_periodic=True),
+              periodic=True),
     Datapoint(function_group=50, datapoint=37602, function_name="temperature_exhaust_air", datatype=datatypes.Signed(1),
-              send_periodic=True),
+              periodic=True),
     Datapoint(function_group=50, datapoint=38600, function_name="ventilator_fortluft_soll", datatype=datatypes.List()),
     # Fehler!
 }

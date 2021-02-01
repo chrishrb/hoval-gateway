@@ -10,11 +10,11 @@ class Datapoint:
         self._function_name = function_name
         self._datatype = datatype
         self._function_number = function_number
-        self._send_periodic = False
+        self._periodic = False
         self._set = False
 
-        if "send_periodic" in kwargs:
-            self._send_periodic = kwargs["send_periodic"]
+        if "periodic" in kwargs:
+            self._periodic = kwargs["periodic"]
         if "set" in kwargs:
             self._set = kwargs["set"]
 
@@ -24,7 +24,7 @@ class Datapoint:
 
     @property
     def send_periodic(self):
-        return self._send_periodic
+        return self._periodic
 
     @property
     def function_name(self):

@@ -54,7 +54,7 @@ class PeriodicRequest:
 
     def start(self):
         for datapoint in self._datapoint_list.datapoint_list:
-            if not datapoint.send_periodic:
+            if not datapoint.periodic:
                 continue
 
             message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
@@ -81,7 +81,6 @@ class OneTimeRequest:
 
         message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
                           operation_id=self._operation_id)
-        request = Request(datapoint.function_name, data)
-        message.put(request)
+        message.put(Request(datapoint.function_name, data))
         message.send()
         logging.debug("Request sent with data %s", str(data))
