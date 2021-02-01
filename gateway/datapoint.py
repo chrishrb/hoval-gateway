@@ -23,7 +23,7 @@ class Datapoint:
         return self._set
 
     @property
-    def send_periodic(self):
+    def periodic(self):
         return self._periodic
 
     @property
