@@ -13,11 +13,10 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    if msg.payload.decode() >= 0 and msg.payload <= 100:
-        request = OneTimeRequest(Device(10, 8), settings.OPERATIONS["SET_REQUEST"], "lueftungs_modulation")
-        request.start()
-        logging.debug("Request sent!")
-        client.disconnect()
+    request = OneTimeRequest(Device(10, 8), settings.OPERATIONS["SET_REQUEST"], "lueftungs_modulation")
+    request.start(int.to_bytes(msg.payload.decode(), 1, byteorder='big', signed=False))
+    logging.debug("Request sent!")
+    client.disconnect()
 
 
 client = mqtt.Client("hoval-client")

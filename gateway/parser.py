@@ -72,10 +72,10 @@ class OneTimeRequest:
         self._function_name = function_name
         self._operation_id = operation
 
-    def start(self):
+    def start(self, data):
         datapoint = self._datapoint_list.get_datapoint_by_name(function_name=self._function_name)
 
         message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
                           operation_id=self._operation_id)
-        message.put(Request(datapoint.function_name))
+        message.put(Request(datapoint.function_name, data))
         message.send()

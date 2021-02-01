@@ -13,9 +13,9 @@ class Datapoint:
         self._send_periodic = False
         self._set = False
 
-        if kwargs["send_periodic"]:
+        if "send_periodic" in kwargs:
             self._send_periodic = kwargs["send_periodic"]
-        if kwargs["set"]:
+        if "set" in kwargs:
             self._set = kwargs["set"]
 
     @property
