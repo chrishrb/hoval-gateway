@@ -13,9 +13,13 @@ class Message:
         self._message_id = arbitration_id >> 24
         self._device_type = (arbitration_id >> 8) & 0xff
         self._device_id = arbitration_id & 0xff
-        self._message_len = message_len >> 3
+        self._message_len = message_len
         self._nb_remaining = message_len + 1
         self._operation_id = operation_id
+
+    @property
+    def arbitration_id(self):
+        return self._arbitration_id
 
     @property
     def device_type(self):

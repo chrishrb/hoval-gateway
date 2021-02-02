@@ -26,7 +26,8 @@ class ResponseParser:
                     if message.operation_id == settings.OPERATIONS["RESPONSE"]:
                         return message.parse_data()
                     else:
-                        logging.debug(message.parse_data())
+                        logging.debug("Message data: " + message.parse_data())
+                        logging.debug("arbitration_id: " + message.arbitration_id)
                 else:
                     self._pending_msg[message.operation_id] = {
                         message
