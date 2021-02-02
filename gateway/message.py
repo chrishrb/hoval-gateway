@@ -69,14 +69,12 @@ class Message:
 
         return None
 
-    def send(self):
+    def send(self, bus):
         """
         Send data to CAN Bus
 
         :return:
         """
-        bus = can.interface.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
-
         for body in self._message_body:
             msg = can.Message(arbitration_id=self._arbitration_id,
                               data=[
@@ -91,14 +89,12 @@ class Message:
             except can.CanError:
                 logging.debug("Message NOT sent")
 
-    def send_periodic(self):
+    def send_periodic(self, bus):
         """
         Send data periodically to CAN-BUS (e.g. ask every 20 seconds for temperature, ..)
 
         :return: task
         """
-        bus = can.interface.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
-
         for body in self._message_body:
             msg = can.Message(arbitration_id=self._arbitration_id,
                               data=[
@@ -110,7 +106,6 @@ class Message:
 
             task = bus.send_periodic(msg, settings.PERIODIC_TIME)
             assert isinstance(task, can.CyclicSendTaskABC)
-            return task
 
 
 class Response:

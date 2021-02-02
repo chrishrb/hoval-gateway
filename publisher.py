@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 from gateway import settings
 from gateway.datapoint import Device
-from gateway.core import ResponseParser, Request, PeriodicRequest
+from gateway.core import ResponseParser, PeriodicRequest
 
 
 async def main():
@@ -21,12 +21,12 @@ async def main():
     event_loop = asyncio.get_event_loop()
     notifier = can.Notifier(can0, listeners, loop=event_loop)
 
+    # Periodic Requests
+    periodic_request = PeriodicRequest(can0, Device(10, 8))
+    periodic_request.start()
+
     # Message Parser
     message_parser = ResponseParser()
-
-    # Periodic Requests
-    periodic_request = PeriodicRequest(Device(10, 8))
-    periodic_request.start()
 
     # MQTT Client
     client = mqtt.Client("hoval-client")
@@ -38,16 +38,17 @@ async def main():
         msg = await reader.get_message()
         parsed = message_parser.parse(msg)
         if parsed:
-            logging.info("hoval-gw/" + str(parsed[0]) + "/status " + str(parsed[1]))
             client.publish("hoval-gw/" + str(parsed[0]) + "/status", parsed[1])
+            logging.info("hoval-gw/" + str(parsed[0]) + "/status " + str(parsed[1]))
 
     # Clean-up
     notifier.stop()
     can0.shutdown()
 
 
-# Get the default event loop
 loop = asyncio.get_event_loop()
-# Run until main coroutine finishes
-loop.run_until_complete(main())
-loop.close()
+try:
+    loop.run_until_complete(main())
+finally:
+    print("Exit..")
+    loop.close()

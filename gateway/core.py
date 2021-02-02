@@ -53,9 +53,10 @@ class PeriodicRequest:
     _operation_id = settings.OPERATIONS["GET_REQUEST"]
     _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
 
-    def __init__(self, device):
+    def __init__(self, device, bus):
         self._device = device
         self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
+        self._bus = bus
 
     def start(self):
         for datapoint in self._datapoint_list.datapoint_list:
@@ -65,7 +66,7 @@ class PeriodicRequest:
             message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
                               operation_id=self._operation_id)
             message.put(Request(datapoint.function_name))
-            message.send_periodic()
+            message.send_periodic(self._bus)
 
 
 class OneTimeRequest:
@@ -73,11 +74,12 @@ class OneTimeRequest:
     _prio = 8160
     _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
 
-    def __init__(self, device, operation, function_name):
+    def __init__(self, bus, device, operation, function_name):
         self._device = device
         self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
         self._function_name = function_name
         self._operation_id = operation
+        self._bus = bus
 
     def start(self, data):
         datapoint = self._datapoint_list.get_datapoint_by_name(function_name=self._function_name)
@@ -87,5 +89,5 @@ class OneTimeRequest:
         message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
                           operation_id=self._operation_id)
         message.put(Request(datapoint.function_name, data))
-        message.send()
+        message.send(self._bus)
         logging.debug("Request sent with data %s", str(data))

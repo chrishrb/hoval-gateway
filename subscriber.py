@@ -1,5 +1,6 @@
 import logging
 
+import can
 import paho.mqtt.client as mqtt
 
 from gateway import settings
@@ -13,7 +14,8 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    request = OneTimeRequest(Device(10, 8), settings.OPERATIONS["SET_REQUEST"], "normal_lueftungs_modulation")
+    can0 = can.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
+    request = OneTimeRequest(can0, Device(10, 8), settings.OPERATIONS["SET_REQUEST"], "normal_lueftungs_modulation")
     request.start(int(float(msg.payload.decode())))
     logging.debug("Request sent!")
 
