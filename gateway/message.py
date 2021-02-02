@@ -47,6 +47,10 @@ class Message:
             self._nb_remaining - 1
 
     def parse_data(self):
+        """
+        Parse the data from the CAN Bus
+        :return: data
+        """
         if not self._message_body:
             return None
 
@@ -62,6 +66,11 @@ class Message:
         return None
 
     def send(self):
+        """
+        Send data to CAN Bus
+
+        :return:
+        """
         bus = can.interface.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
 
         for body in self._message_body:
@@ -74,11 +83,16 @@ class Message:
                               is_extended_id=True)
             try:
                 bus.send(msg)
-                print("Message sent on {}".format(bus.channel_info))
+                logging.debug("Message sent on {}".format(bus.channel_info))
             except can.CanError:
-                print("Message NOT sent")
+                logging.debug("Message NOT sent")
 
     def send_periodic(self):
+        """
+        Send data periodically to CAN-BUS (e.g. ask every 20 seconds for temperature, ..)
+
+        :return: task
+        """
         bus = can.interface.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
 
         for body in self._message_body:

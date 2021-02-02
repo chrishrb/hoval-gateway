@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 
 from gateway import settings
 from gateway.datapoint import Device
-from gateway.parser import OneTimeRequest
+from gateway.core import OneTimeRequest
 
 
 def on_connect(client, userdata, flags, rc):

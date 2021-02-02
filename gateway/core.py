@@ -23,9 +23,10 @@ class ResponseParser:
             if message.message_id == 0x1f:
                 if message.message_len == 0:
                     message.put(Response(msg.data))
-                    logging.debug(message.parse_data())
                     if message.operation_id == settings.OPERATIONS["RESPONSE"]:
                         return message.parse_data()
+                    else:
+                        logging.debug(message.parse_data())
                 else:
                     self._pending_msg[message.operation_id] = {
                         message
@@ -37,8 +38,11 @@ class ResponseParser:
                     message.put(Response(msg.data))
                     if message.nb_remaining == 0:
                         del self._pending_msg[msg_header]
-                        return message.parse_data()
 
+                        if message.operation_id == settings.OPERATIONS["RESPONSE"]:
+                            return message.parse_data()
+                        else:
+                            logging.debug(message.parse_data())
         return None
 
 
