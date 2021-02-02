@@ -14,7 +14,7 @@ class ResponseParser:
             logging.error("Message too small")
             return None
 
-        message = Message(msg.arbitration_id, msg.data[0], msg.data[1])
+        message = Message(msg.arbitration_id, msg.data[0], (msg.data[1] >> 3))
         if message.operation_id in settings.OPERATIONS.values():
             if message.device_id not in self._devices:
                 logging.info("New device detected - Id: %d / Type: %d", message.device_id, message.device_type)
@@ -23,7 +23,7 @@ class ResponseParser:
             if message.message_id == 0x1f:
                 if message.message_len == 0:
                     message.put(Response(msg.data))
-                    logging.info(message.parse_data())
+                    logging.debug(message.parse_data())
                     if message.operation_id == settings.OPERATIONS["RESPONSE"]:
                         return message.parse_data()
                 else:
