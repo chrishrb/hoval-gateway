@@ -53,7 +53,7 @@ class PeriodicRequest:
     _operation_id = settings.OPERATIONS["GET_REQUEST"]
     _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
 
-    def __init__(self, device, bus):
+    def __init__(self, bus, device):
         self._device = device
         self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
         self._bus = bus
