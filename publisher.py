@@ -3,8 +3,9 @@ import asyncio
 import logging
 import paho.mqtt.client as mqtt
 
-from gateway import settings, subscriber
+from gateway import settings
 from gateway.core import ResponseParser, PeriodicRequest
+from gateway.subscriber import Subscriber
 
 
 async def main():
@@ -33,6 +34,7 @@ async def main():
     client.connect(settings.MQTT["BROKER"])
 
     # Receive Requests
+    subscriber = Subscriber(can0)
     client.on_connect = subscriber.on_connect
     client.on_message = subscriber.on_message
     client.loop_start()

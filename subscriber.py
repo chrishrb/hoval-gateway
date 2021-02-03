@@ -10,7 +10,7 @@ from gateway.core import OneTimeRequest
 
 def on_connect(client, userdata, flags, rc):
     logging.debug("Connected with result code " + str(rc))
-    client.subscribe("hoval-gw/lueftungs_modulation/set")
+    client.write("hoval-gw/lueftungs_modulation/set")
 
 
 def on_message(client, userdata, msg):

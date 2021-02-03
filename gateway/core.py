@@ -61,7 +61,7 @@ class PeriodicRequest:
 
     def start(self):
         for datapoint in self._datapoint_list.datapoint_list:
-            if not datapoint.periodic:
+            if not datapoint.read:
                 continue
 
             arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id

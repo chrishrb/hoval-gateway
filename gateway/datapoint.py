@@ -5,21 +5,21 @@ class Datapoint:
         self._function_name = function_name
         self._datatype = datatype
         self._function_number = function_number
-        self._periodic = False
-        self._set = False
+        self._read = False
+        self._write = False
 
-        if "periodic" in kwargs:
-            self._periodic = kwargs["periodic"]
-        if "set" in kwargs:
-            self._set = kwargs["set"]
-
-    @property
-    def subscribe(self):
-        return self._set
+        if "read" in kwargs:
+            self._read = kwargs["read"]
+        if "write" in kwargs:
+            self._write = kwargs["write"]
 
     @property
-    def periodic(self):
-        return self._periodic
+    def write(self):
+        return self._write
+
+    @property
+    def read(self):
+        return self._read
 
     @property
     def function_name(self):
