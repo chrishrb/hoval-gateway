@@ -7,6 +7,9 @@ from gateway.datapoint import DatapointList
 
 
 class Message:
+    """
+    Message - Basic Class for all Messages
+    """
     def __init__(self, arbitration_id, message_len, operation_id):
         self._message_body = list()
         self._arbitration_id = arbitration_id
@@ -112,7 +115,10 @@ class Message:
         return tasks
 
 
-class Response:
+class MessageResponse:
+    """
+    Message Response Body (part of Message)
+    """
     def __init__(self, data):
         datapoint_list = DatapointList(settings.DATAPOINT_LIST)
         function_group = data[2]
@@ -133,7 +139,10 @@ class Response:
         return self._datapoint
 
 
-class Request:
+class MessageRequest:
+    """
+    Message Request body (part of Message)
+    """
     def __init__(self, function_name, data=0):
         datapoint_list = DatapointList(settings.DATAPOINT_LIST)
         self._datapoint = datapoint_list.get_datapoint_by_name(function_name=function_name)

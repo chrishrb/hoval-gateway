@@ -1,4 +1,7 @@
 class Datapoint:
+    """
+    Datapoint of CAN-Message
+    """
     def __init__(self, function_group, datapoint, function_name, datatype, function_number=0, **kwargs):
         self._function_group = function_group
         self._datapoint = datapoint
@@ -46,6 +49,10 @@ class Datapoint:
 
 
 class DatapointList:
+    """
+    List of Datapoints
+    todo: not optimized (for-loops, ..)
+    """
     def __init__(self, datapoint_list):
         self._datapoint_list = datapoint_list
 
@@ -68,6 +75,9 @@ class DatapointList:
 
 
 class Device:
+    """
+    Devices
+    """
     def __init__(self, device_type, device_id):
         self._device_type = device_type
         self._device_id = device_id

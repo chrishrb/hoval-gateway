@@ -1,19 +1,23 @@
 import logging
+import os
+
 import can
+from dotenv import load_dotenv
 
 from gateway import datatypes
 from gateway.datapoint import Datapoint, Device
 
+load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 
 MQTT = {
-    "BROKER": "192.168.14.2",
-    "BROKER_USERNAME": "admin",
-    "BROKER_PASSWORD": "admin",
-    "TOPIC": "hoval-gw"
+    "BROKER": os.getenv("MQTT_BROKER"),
+    "BROKER_USERNAME": os.getenv("MQTT_BROKER_USERNAME"),
+    "BROKER_PASSWORD": os.getenv("MQTT_BROKER_PASSWORD"),
+    "TOPIC": os.getenv("MQTT_TOPIC", "hoval-gw")
 }
 
-PERIODIC_TIME = 60
+PERIODIC_TIME = os.getenv("PERIODIC_TIME", 60)
 
 OPERATIONS = {
     "RESPONSE": 0x42,
@@ -27,6 +31,7 @@ CAN_BUS = can.Bus(channel='can0', bustype='socketcan', receive_own_messages=Fals
 
 # todo: make optimizations
 # todo: make ready for all devices??
+# todo: translate to english
 DATAPOINT_LIST = {
     Datapoint(function_group=50, datapoint=40650, function_name="betriebswahl_lueftung", datatype=datatypes.List()),
     Datapoint(function_group=50, datapoint=40651, function_name="normal_lueftungs_modulation", datatype=datatypes.List(),
@@ -45,5 +50,5 @@ DATAPOINT_LIST = {
     Datapoint(function_group=50, datapoint=37602, function_name="temperature_exhaust_air", datatype=datatypes.Signed(1),
               read=True),
     Datapoint(function_group=50, datapoint=38600, function_name="ventilator_fortluft_soll", datatype=datatypes.List()),
-    # Fehler!
+    # todo: Add all datapoints!
 }

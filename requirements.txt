@@ -3,3 +3,4 @@ paho-mqtt==1.5.1
 python-can==3.3.4
 wrapt==1.12.1
 pythonlangutil~=0.1
+python-dotenv~=0.15.0
