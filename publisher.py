@@ -3,7 +3,7 @@ import asyncio
 import logging
 import paho.mqtt.client as mqtt
 
-from gateway import settings
+from gateway import settings, subscriber
 from gateway.core import ResponseParser, PeriodicRequest
 
 
@@ -31,6 +31,11 @@ async def main():
     client = mqtt.Client("hoval-client")
     client.username_pw_set(username=settings.MQTT["BROKER_USERNAME"], password=settings.MQTT["BROKER_PASSWORD"])
     client.connect(settings.MQTT["BROKER"])
+
+    # Receive Requests
+    client.on_connect = subscriber.on_message
+    client.on_message = subscriber.on_message
+    client.loop_start()
 
     while True:
         # Wait for next message from AsyncBufferedReader
