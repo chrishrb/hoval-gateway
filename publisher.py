@@ -44,8 +44,8 @@ async def main():
         msg = await reader.get_message()
         parsed = message_parser.parse(msg)
         if parsed:
-            client.publish("hoval-gw/" + str(parsed[0]) + "/status", parsed[1])
-            logging.info("hoval-gw/" + str(parsed[0]) + "/status " + str(parsed[1]))
+            client.publish(settings.MQTT["TOPIC"] + "/" + str(parsed[0]) + "/status", parsed[1])
+            logging.info(settings.MQTT["TOPIC"] + "/" + str(parsed[0]) + "/status " + str(parsed[1]))
 
     # Clean-up
     # todo: does this work??

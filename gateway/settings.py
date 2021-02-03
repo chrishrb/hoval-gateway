@@ -9,7 +9,8 @@ logging.basicConfig(level=logging.DEBUG)
 MQTT = {
     "BROKER": "192.168.14.2",
     "BROKER_USERNAME": "admin",
-    "BROKER_PASSWORD": "admin"
+    "BROKER_PASSWORD": "admin",
+    "TOPIC": "hoval-gw"
 }
 
 PERIODIC_TIME = 60

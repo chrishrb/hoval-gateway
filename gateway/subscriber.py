@@ -18,7 +18,7 @@ class Subscriber:
                 if not datapoint.write:
                     continue
 
-                client.write(datapoint.function_name + "/set")
+                client.subscribe(settings.MQTT["TOPIC"] + "/" + datapoint.function_name + "/set")
         else:
             logging.error("Connection failed")
 
