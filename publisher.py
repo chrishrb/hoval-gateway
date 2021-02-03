@@ -33,7 +33,7 @@ async def main():
     client.connect(settings.MQTT["BROKER"])
 
     # Receive Requests
-    client.on_connect = subscriber.on_message
+    client.on_connect = subscriber.on_connect
     client.on_message = subscriber.on_message
     client.loop_start()
 
