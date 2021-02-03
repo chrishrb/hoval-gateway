@@ -26,8 +26,8 @@ class ResponseParser:
                     if message.operation_id == settings.OPERATIONS["RESPONSE"]:
                         return message.parse_data()
                     else:
-                        logging.debug("Message data: " + message.parse_data())
-                        logging.debug("arbitration_id: " + message.arbitration_id)
+                        logging.debug("Message data: " + str(message.parse_data()))
+                        logging.debug("arbitration_id: " + str(message.arbitration_id))
                 else:
                     self._pending_msg[message.operation_id] = {
                         message
@@ -49,13 +49,14 @@ class ResponseParser:
 
 class PeriodicRequest:
     _message_len = 1
+    # todo: is this id okay??
     _prio = 8160
     _operation_id = settings.OPERATIONS["GET_REQUEST"]
     _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
+    _tasks = []
 
     def __init__(self, bus, device):
         self._device = device
-        self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
         self._bus = bus
 
     def start(self):
@@ -63,10 +64,17 @@ class PeriodicRequest:
             if not datapoint.periodic:
                 continue
 
-            message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
+            arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
+            message = Message(arbitration_id=arbitration_id, message_len=self._message_len,
                               operation_id=self._operation_id)
             message.put(Request(datapoint.function_name))
-            message.send_periodic(self._bus)
+            task = message.send_periodic(self._bus)
+            self._prio += 1
+            self._tasks += task
+
+    def stop(self):
+        for task in self._tasks:
+            task.stop()
 
 
 class OneTimeRequest:

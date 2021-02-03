@@ -1,7 +1,8 @@
 import logging
+import can
 
 from gateway import datatypes
-from gateway.datapoint import Datapoint
+from gateway.datapoint import Datapoint, Device
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,6 +20,12 @@ OPERATIONS = {
     "SET_REQUEST": 0x46
 }
 
+TARGET = Device(10, 8)
+
+CAN_BUS = can.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
+
+# todo: make optimizations
+# todo: make ready for all devices??
 DATAPOINT_LIST = {
     Datapoint(function_group=50, datapoint=40650, function_name="betriebswahl_lueftung", datatype=datatypes.List()),
     Datapoint(function_group=50, datapoint=40651, function_name="normal_lueftungs_modulation", datatype=datatypes.List()),

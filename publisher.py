@@ -4,12 +4,11 @@ import logging
 import paho.mqtt.client as mqtt
 
 from gateway import settings
-from gateway.datapoint import Device
 from gateway.core import ResponseParser, PeriodicRequest
 
 
 async def main():
-    can0 = can.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
+    can0 = settings.CAN_BUS
     reader = can.AsyncBufferedReader()
     # logger = can.Logger('logfile.log')
 
@@ -22,7 +21,7 @@ async def main():
     notifier = can.Notifier(can0, listeners, loop=event_loop)
 
     # Periodic Requests
-    periodic_request = PeriodicRequest(can0, Device(10, 8))
+    periodic_request = PeriodicRequest(can0, settings.TARGET)
     periodic_request.start()
 
     # Message Parser
@@ -42,6 +41,8 @@ async def main():
             logging.info("hoval-gw/" + str(parsed[0]) + "/status " + str(parsed[1]))
 
     # Clean-up
+    # todo: does this work??
+    periodic_request.stop()
     notifier.stop()
     can0.shutdown()
 

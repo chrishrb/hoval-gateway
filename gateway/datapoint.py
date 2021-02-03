@@ -1,8 +1,3 @@
-from typing import overload
-
-from gateway import datatypes
-
-
 class Datapoint:
     def __init__(self, function_group, datapoint, function_name, datatype, function_number=0, **kwargs):
         self._function_group = function_group

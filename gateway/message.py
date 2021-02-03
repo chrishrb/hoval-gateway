@@ -69,6 +69,7 @@ class Message:
 
         return None
 
+    # todo: give status back (to smarthome app??)
     def send(self, bus):
         """
         Send data to CAN Bus
@@ -95,6 +96,7 @@ class Message:
 
         :return: task
         """
+        tasks = []
         for body in self._message_body:
             msg = can.Message(arbitration_id=self._arbitration_id,
                               data=[
@@ -106,6 +108,8 @@ class Message:
 
             task = bus.send_periodic(msg, settings.PERIODIC_TIME)
             assert isinstance(task, can.CyclicSendTaskABC)
+            tasks.append(task)
+        return tasks
 
 
 class Response:
