@@ -31,7 +31,9 @@ async def main():
     # MQTT Client
     client = mqtt.Client("hoval-client")
     client.username_pw_set(username=settings.MQTT["BROKER_USERNAME"], password=settings.MQTT["BROKER_PASSWORD"])
-    client.connect(settings.MQTT["BROKER"])
+    if settings.MQTT['PORT'] == 8883:
+        client.tls_set_context()
+    client.connect(settings.MQTT["BROKER"], port=settings.MQTT["PORT"])
 
     # Receive Requests
     subscriber = Subscriber(can0)

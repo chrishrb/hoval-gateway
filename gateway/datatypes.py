@@ -13,7 +13,7 @@ class Unsigned(Datatype):
 
     def convert(self, value):
         val = int.from_bytes(value, byteorder='big', signed=False)
-        return val * 10 ** (-self._decimal)
+        return round(val * 10 ** (-self._decimal), 2)
 
     # todo: only int are accepted
     def check(self, value):
@@ -29,7 +29,7 @@ class Signed(Datatype):
 
     def convert(self, value):
         val = int.from_bytes(value, byteorder='big', signed=True)
-        return val * 10 ** (-self._decimal)
+        return round(val * 10 ** (-self._decimal), 2)
 
     # todo: only int are accepted
     def check(self, value):
@@ -42,7 +42,7 @@ class Signed(Datatype):
 class List(Datatype):
     def convert(self, value):
         val = int.from_bytes(value, byteorder='big', signed=False)
-        return val
+        return round(val)
 
     def check(self, value):
         return isinstance(value, int)
