@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 MQTT = {
     "BROKER": os.getenv("MQTT_BROKER"),
-    "PORT": os.getenv("MQTT_PORT", 1883),
+    "PORT": int(os.getenv("MQTT_PORT", 1883)),
     "BROKER_USERNAME": os.getenv("MQTT_BROKER_USERNAME"),
     "BROKER_PASSWORD": os.getenv("MQTT_BROKER_PASSWORD"),
     "TOPIC": os.getenv("MQTT_TOPIC", "hoval-gw")
