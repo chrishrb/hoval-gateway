@@ -1,0 +1,86 @@
+##################
+### Automations ##
+##################
+#
+- alias: 'Set Level'
+  trigger:
+    - platform: state
+      entity_id: input_number.level
+  action:
+    - service: mqtt.publish
+      data_template:
+        topic: hoval-gw/normal_lueftungs_modulation/set
+        retain: true
+        payload: "{{ states('input_number.level') | int }}"
+
+- alias: 'Get Level'
+  trigger:
+    - platform: mqtt
+      topic: hoval-gw/normal_lueftungs_modulation/status
+  action:
+    - service: input_number.set_value
+      data:
+        entity_id: input_number.level
+        value: "{{ trigger.payload }}"
+
+- alias: 'Set economy level'
+  trigger:
+    - platform: state
+      entity_id: input_number.economy_level
+  action:
+    - service: mqtt.publish
+      data_template:
+        topic: hoval-gw/spar_lueftungs_modulation/set
+        retain: true
+        payload: "{{ states('input_number.economy_level') | int }}"
+
+- alias: 'Get economy level'
+  trigger:
+    - platform: mqtt
+      topic: hoval-gw/spar_lueftungs_modulation/status
+  action:
+    - service: input_number.set_value
+      data:
+        entity_id: input_number.economy_level
+        value: "{{ trigger.payload }}"
+
+- alias: 'Get operation choice'
+  trigger:
+    platform: mqtt
+    topic: hoval-gw/betriebswahl_lueftung/status
+  action:
+     service: input_select.select_option
+     data_template:
+      entity_id: input_select.level
+      # only if you want to disable all choices and use your own scheduler on home-assistant
+      # else you would have to replace 1/2 with Week program and below you have to insert these two modes
+      option: >
+         {% if trigger.payload == "1" %}
+            Constant
+         {%-elif trigger.payload == "2" %}
+            Constant
+         {%-elif trigger.payload == "4" %}
+            Constant
+         {%-elif trigger.payload == "5" %}
+            Economy mode
+         {%else %}
+            Standby
+         {% endif %}
+
+- alias: 'Set operation choice'
+  trigger:
+    platform: state
+    entity_id: input_select.level
+  action:
+     service: mqtt.publish
+     data_template:
+      topic: hoval-gw/betriebswahl_lueftung/set
+      retain: true
+      payload: >
+         {% if is_state("input_select.level", "Constant") %}
+            4
+         {%-elif is_state("input_select.level", "Economy mode") %}
+            5
+         {%else %}
+            0
+         {% endif %}

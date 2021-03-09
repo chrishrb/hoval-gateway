@@ -8,7 +8,10 @@ from gateway import datatypes
 from gateway.datapoint import Datapoint, Device
 
 load_dotenv()
-logging.basicConfig(level=logging.DEBUG)
+if os.getenv("DEBUG"):
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 MQTT = {
     "BROKER": os.getenv("MQTT_BROKER"),

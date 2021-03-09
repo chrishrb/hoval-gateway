@@ -50,7 +50,6 @@ async def main():
             logging.info(settings.MQTT["TOPIC"] + "/" + str(parsed[0]) + "/status " + str(parsed[1]))
 
     # Clean-up
-    # todo: does this work??
     periodic_request.stop()
     notifier.stop()
     can0.shutdown()

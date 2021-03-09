@@ -1,0 +1,73 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+mqtt:
+  broker: !secret mqtt_broker
+  port: !secret mqtt_port
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+  # needed if you have mqtts with lets encrypt
+  # certificate: /etc/ssl/certs/ca-certificates.crt
+
+###########
+## Hoval ##
+###########
+#
+sensor:
+  - platform: mqtt
+    name: "Outside Air"
+    state_topic: "hoval-gw/temperature_outside_air/status"
+    qos: 0
+    unit_of_measurement: "ºC"
+    icon: mdi:thermometer
+
+  - platform: mqtt
+    name: "Exhaust Air"
+    state_topic: "hoval-gw/temperature_exhaust_air/status"
+    qos: 0
+    unit_of_measurement: "ºC"
+    icon: mdi:home-thermometer
+
+  - platform: mqtt
+    name: "Level"
+    state_topic: "hoval-gw/normal_lueftungs_modulation/status"
+    unit_of_measurement: "%"
+    qos: 0
+
+  - platform: mqtt
+    name: "Operation choice"
+    state_topic: "hoval-gw/betriebswahl_lueftung/status"
+    qos: 0
+
+input_number:
+  level:
+    name: Level
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+
+  economy_level:
+    name: Economy Level
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+
+input_select:
+  level:
+    name: Level
+    icon: mdi:cog
+    options:
+      - "Standby"
+      - "Konstant"
+      - "Sparbetrieb"
