@@ -4,3 +4,4 @@ python-can==3.3.4
 wrapt==1.12.1
 pythonlangutil~=0.1
 python-dotenv~=0.15.0
+pyserial~=3.5
