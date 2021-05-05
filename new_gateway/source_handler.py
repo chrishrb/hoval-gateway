@@ -1,13 +1,8 @@
 import asyncio
-from binascii import unhexlify
+import logging
 import re
 
 import can
-import serial
-
-import time
-
-from can import Message, Bus
 
 
 class InvalidFrame(Exception):
@@ -37,6 +32,7 @@ class SourceHandler:
 
 
 class CanHandler(SourceHandler):
+    """Handler for CAN interface"""
 
     def __init__(self, device_name):
         self.device_name = device_name
@@ -45,6 +41,7 @@ class CanHandler(SourceHandler):
         self.reader = None
 
     def open(self):
+        logging.debug("Open CAN Interface")
         can0 = can.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
         reader = can.AsyncBufferedReader()
         listeners = [reader]
@@ -57,22 +54,16 @@ class CanHandler(SourceHandler):
         self.notifier = notifier
 
     def close(self):
+        logging.debug("Close CAN Interface")
         if self.can0:
             self.can0.shutdown()
         if self.notifier:
             self.notifier.stop()
 
-    def get_message(self):
-        line = await self.reader.get_message()
-        return line
-
-    def _read_until_newline(self):
-        """Read data from `serial_device` until the next newline character."""
-        line = self.serial_device.readline()
-        while not line.endswith(b'\n'):
-            line = line + self.serial_device.readline()
-
-        return line.strip()
+    async def get_message(self):
+        message = self.reader.get_message()
+        logging.debug("Raw message %s", message)
+        return message
 
 
 class CandumpHandler(SourceHandler):
@@ -81,19 +72,16 @@ class CandumpHandler(SourceHandler):
     MSG_RE = r"\(([.0-9]+)\).* ([0-9A-F]+)\#([0-9A-F]*)"
     MSG_RGX = re.compile(MSG_RE)
 
-    def __init__(self, file_path, speed_scale=1.0):
+    def __init__(self, file_path):
         self.file_path = file_path
         self.file_object = None
-        if not speed_scale or speed_scale <= 0.0:
-            speed_scale = 1.0
-        self.speed_scale = speed_scale
-        self.clock = 0
 
     def open(self):
-        # interface name in candump file may contain non-ascii chars so we need utf-8
+        logging.debug("Open fake CANDUMP Interface (file)")
         self.file_object = open(self.file_path, 'rt', encoding='utf-8')
 
     def close(self):
+        logging.debug("Close fake CANDUMP Interface (file)")
         if self.file_object:
             self.file_object.close()
 
@@ -101,18 +89,18 @@ class CandumpHandler(SourceHandler):
         line = self.file_object.readline()
         if line == '':
             raise EOFError
-        return self._parse_from_candump(line)
+        message = self._parse_from_candump(line)
+        logging.debug("Raw message %s", message)
+        return message
 
-    def _parse_from_candump(self, line):
+    async def _parse_from_candump(self, line):
         line = line.strip('\n')
 
         msg_match = self.MSG_RGX.match(line)
         if msg_match is None:
             raise InvalidFrame("Wrong format: '{}'".format(line))
 
-        abstime, hex_can_id, hex_can_data = msg_match.group(1, 2, 3)
-        self.clock = float(abstime)
-
+        can_time, hex_can_id, hex_can_data = msg_match.group(1, 2, 3)
         can_id = int(hex_can_id, 16)
 
         try:
@@ -120,4 +108,4 @@ class CandumpHandler(SourceHandler):
         except ValueError as err:
             raise InvalidFrame("Can't decode message '{}': '{}'".format(line, err))
 
-        return Message(timestamp=self.clock, arbitration_id=can_id, data=can_data)
+        return can.Message(timestamp=float(can_time), arbitration_id=can_id, data=can_data)
