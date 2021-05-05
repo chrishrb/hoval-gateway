@@ -5,5 +5,4 @@ wrapt==1.12.1
 pythonlangutil~=0.1
 python-dotenv~=0.15.0
 pyserial~=3.5
-can~=0.0.0
 click~=7.1.2

@@ -35,34 +35,36 @@ class CanHandler(SourceHandler):
     """Handler for CAN interface"""
 
     def __init__(self, device_name):
-        self.device_name = device_name
+        self._device_name = device_name
+        self._bus_type = "socketcan"
         self.can0 = None
         self.notifier = None
         self.reader = None
 
     def open(self):
-        logging.debug("Open CAN Interface")
-        can0 = can.Bus(channel='can0', bustype='socketcan', receive_own_messages=False)
-        reader = can.AsyncBufferedReader()
-        listeners = [reader]
+        logging.debug("Open CAN Interface..")
+        can0 = can.Bus(channel=self._device_name, bustype=self._bus_type, receive_own_messages=False)
 
         loop = asyncio.get_event_loop()
+        reader = can.AsyncBufferedReader(loop)
+        listeners = [reader]
         notifier = can.Notifier(can0, listeners, loop=loop)
 
         self.can0 = can0
         self.reader = reader
         self.notifier = notifier
+        logging.debug("CAN Interface opened")
 
     def close(self):
-        logging.debug("Close CAN Interface")
-        if self.can0:
-            self.can0.shutdown()
+        logging.debug("Close CAN Interface..")
         if self.notifier:
             self.notifier.stop()
+        if self.can0:
+            self.can0.shutdown()
+        logging.debug("CAN Interface closed")
 
-    async def get_message(self):
+    def get_message(self):
         message = self.reader.get_message()
-        logging.debug("Raw message %s", message)
         return message
 
 
@@ -77,23 +79,23 @@ class CandumpHandler(SourceHandler):
         self.file_object = None
 
     def open(self):
-        logging.debug("Open fake CANDUMP Interface (file)")
+        logging.debug("Open fake CANDUMP Interface (file)..")
         self.file_object = open(self.file_path, 'rt', encoding='utf-8')
+        logging.debug("Fake CANDUMP Interface (file) opened")
 
     def close(self):
-        logging.debug("Close fake CANDUMP Interface (file)")
+        logging.debug("Close fake CANDUMP Interface (file)..")
         if self.file_object:
             self.file_object.close()
+        logging.debug("Fake CANDUMP Interface (file) closed")
 
-    def get_message(self):
+    async def get_message(self):
         line = self.file_object.readline()
         if line == '':
             raise EOFError
-        message = self._parse_from_candump(line)
-        logging.debug("Raw message %s", message)
-        return message
+        return self._parse_from_candump(line)
 
-    async def _parse_from_candump(self, line):
+    def _parse_from_candump(self, line):
         line = line.strip('\n')
 
         msg_match = self.MSG_RGX.match(line)
