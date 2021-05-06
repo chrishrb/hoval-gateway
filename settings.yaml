@@ -1,0 +1,54 @@
+periodic_time: 30
+target_device:
+  - type: 10
+    number: 8
+datapoints:
+  - name: betriebswahl_lueftung
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40650
+    type: List
+  - name: normal_lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40651
+    type: List
+  - name: normal_lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40651
+    type: List
+  - name: spar_lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40686
+    type: List
+  - name: lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 38606
+    type: List
+  - name: feuchte_sollwert
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40687
+    type: Unsigned
+    decimal: 1
+  - name: feuchtigkeit_abluft
+    function_group: 50
+    function_number: 0
+    datapoint_id: 37600
+    type: Unsigned
+    decimal: 1
+  - name: temperature_outside_air
+    function_group: 50
+    function_number: 0
+    datapoint_id: 0
+    type: Signed
+    decimal: 1
+  - name: temperature_exhaust_air
+    function_group: 50
+    function_number: 0
+    datapoint_id: 37602
+    type: Signed
+    decimal: 1

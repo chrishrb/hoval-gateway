@@ -4,7 +4,7 @@ import os
 import can
 from dotenv import load_dotenv
 
-from gateway import datatypes
+from new_gateway import datatypes
 from gateway.datapoint import Datapoint, Device
 
 load_dotenv()

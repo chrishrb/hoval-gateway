@@ -1,6 +1,10 @@
 from abc import abstractmethod
 
 
+class UnknownDatatypeError(Exception):
+    pass
+
+
 class Datatype:
     @abstractmethod
     def convert(self, value):
@@ -15,10 +19,6 @@ class Unsigned(Datatype):
         val = int.from_bytes(value, byteorder='big', signed=False)
         return round(val * 10 ** (-self._decimal), 2)
 
-    # todo: only int are accepted
-    def check(self, value):
-        return isinstance(value, int)
-
     def __str__(self):
         return "Unsigned"
 
@@ -31,10 +31,6 @@ class Signed(Datatype):
         val = int.from_bytes(value, byteorder='big', signed=True)
         return round(val * 10 ** (-self._decimal), 2)
 
-    # todo: only int are accepted
-    def check(self, value):
-        return isinstance(value, int)
-
     def __str__(self):
         return "Signed"
 
@@ -44,9 +40,6 @@ class List(Datatype):
         val = int.from_bytes(value, byteorder='big', signed=False)
         return round(val)
 
-    def check(self, value):
-        return isinstance(value, int)
-
     def __str__(self):
         return "List"
 
@@ -54,9 +47,6 @@ class List(Datatype):
 class String(Datatype):
     def convert(self, value):
         return value.decode('utf-8')
-
-    def check(self, value):
-        return isinstance(value, str)
 
     def __str__(self):
         return "String"
