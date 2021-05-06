@@ -10,6 +10,7 @@ from new_gateway.source_handler import CanHandler, CandumpHandler
 
 
 def get_settings(settings_file):
+    """Parse settings file"""
     settings = yaml.full_load(settings_file)
 
     for item, element in settings.items():
@@ -41,6 +42,7 @@ def run(verbose, file, settings):
     else:
         logging.basicConfig(level=logging.INFO)
 
+    # Start can loop
     loop = asyncio.get_event_loop()
     try:
         asyncio.ensure_future(read(can0))

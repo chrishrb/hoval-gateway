@@ -4,10 +4,6 @@ from enum import Enum
 from new_gateway import datapoint
 
 
-class NoMessageError(Exception):
-    pass
-
-
 class Operation(Enum):
     RESPONSE = 0x42
     GET_REQUEST = 0x40
@@ -26,6 +22,7 @@ class Message:
     def __init__(self, arbitration_id, message_len, operation_id, message_header):
         self.arbitration_id = arbitration_id
         self.message_id = arbitration_id >> 24
+        self.prio = (arbitration_id >> 16) & 0xff
         self.device_type = (arbitration_id >> 8) & 0xff
         self.device_id = arbitration_id & 0xff
         self.message_len = message_len
@@ -49,21 +46,23 @@ class Message:
     def is_valid(self, msg):
         return len(msg.data) > 2 and self.operation_id in Operation.list()
 
-    def __str__(self):
-        return str.format("Message: id: {}, nb_remaining: {}, data: {}", self.message_id, self.nb_remaining, self.data)
-
-
-class MessageResponse(Message):
-    def __init__(self, arbitration_id, message_len, operation_id, message_header):
-        super().__init__(arbitration_id, message_len, operation_id, message_header)
-
     def parse(self):
-        logging.debug("message %s", self.data)
         function_group = self.data[2]
         function_number = self.data[3]
         function_datapoint = int.from_bytes(self.data[4:6], byteorder='big', signed=False)
         read_datapoint = datapoint.get_datapoint_by_id(function_group, function_number, function_datapoint)
         return read_datapoint, Operation(self.operation_id), read_datapoint.get_datapoint_type().convert(self.data[6:])
+
+    def __str__(self):
+        return str.format("Message: id: {}, prio: {}, operation: {}, nb_remaining: {}, device_type: {}, device_id: {}, "
+                          "data: {}",
+                          self.message_id,
+                          self.prio,
+                          Operation(self.operation_id),
+                          self.nb_remaining,
+                          self.device_type,
+                          self.device_id,
+                          self.data)
 
 
 def get_message_id(arbitration_id):

@@ -7,48 +7,53 @@ datapoints:
     function_group: 50
     function_number: 0
     datapoint_id: 40650
-    type: List
+    type: LIST
   - name: normal_lueftungs_modulation
     function_group: 50
     function_number: 0
     datapoint_id: 40651
-    type: List
+    type: LIST
   - name: normal_lueftungs_modulation
     function_group: 50
     function_number: 0
     datapoint_id: 40651
-    type: List
+    type: LIST
   - name: spar_lueftungs_modulation
     function_group: 50
     function_number: 0
     datapoint_id: 40686
-    type: List
+    type: LIST
   - name: lueftungs_modulation
     function_group: 50
     function_number: 0
     datapoint_id: 38606
-    type: List
+    type: LIST
   - name: feuchte_sollwert
     function_group: 50
     function_number: 0
     datapoint_id: 40687
-    type: Unsigned
+    type: U16
     decimal: 1
   - name: feuchtigkeit_abluft
     function_group: 50
     function_number: 0
     datapoint_id: 37600
-    type: Unsigned
+    type: U16
     decimal: 1
   - name: temperature_outside_air
     function_group: 50
     function_number: 0
     datapoint_id: 0
-    type: Signed
+    type: S16
     decimal: 1
   - name: temperature_exhaust_air
     function_group: 50
     function_number: 0
     datapoint_id: 37602
-    type: Signed
+    type: S16
     decimal: 1
+  - name: name_of_hv
+    function_group: 0
+    function_number: 0
+    datapoint_id: 4005
+    type: STR

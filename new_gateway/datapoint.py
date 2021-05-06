@@ -16,24 +16,38 @@ class Datapoint:
         self.function_number = datapoint_from_settings["function_number"]
         self.datapoint_id = datapoint_from_settings["datapoint_id"]
         self.datatype = datapoint_from_settings["type"]
-        self.decimal = get_settings_data_save(datapoint_from_settings, "decimal", int)
-        self.read = get_settings_data_save(datapoint_from_settings, "read", bool)
-        self.write = get_settings_data_save(datapoint_from_settings, "write", bool)
+        self.decimal = get_settings_data_safe(datapoint_from_settings, "decimal", int)
+        self.read = get_settings_data_safe(datapoint_from_settings, "read", bool)
+        self.write = get_settings_data_safe(datapoint_from_settings, "write", bool)
 
     def get_datapoint_type(self):
-        if self.datatype == "Unsigned":
+        """Get type of datapoint"""
+        if self.datatype == "U8" or self.datatype == "U16" or self.datatype == "U32":
             return Unsigned(self.decimal)
-        elif self.datatype == "Signed":
+        elif self.datatype == "S8" or self.datatype == "S16" or self.datatype == "S32":
             return Signed(self.decimal)
-        elif self.datatype == "List":
+        elif self.datatype == "LIST":
             return List()
-        elif self.datatype == "String":
+        elif self.datatype == "STR":
             return String()
         else:
-            raise UnknownDatatypeError
+            raise UnknownDatatypeError(str.format("Datatype {} not known", self.datatype))
+
+    def __str__(self):
+        return str.format("Datapoint: name: {}, function_group: {}, function_number: {}, datapoint_id: {}, "
+                          "datatype: {}, decimal: {}, read: {}, write: {}",
+                          self.name,
+                          self.function_group,
+                          self.function_number,
+                          self.datapoint_id,
+                          self.datatype,
+                          self.decimal,
+                          self.read,
+                          self.write)
 
 
-def get_settings_data_save(datapoint_from_settings, column, data_type):
+def get_settings_data_safe(datapoint_from_settings, column, data_type):
+    """Get settings data safe (if data not there, set default ones)"""
     if column in datapoint_from_settings:
         return datapoint_from_settings[column]
     else:
@@ -57,7 +71,7 @@ def parse_datapoints(element):
 def get_datapoint_by_name(name):
     """Get datapoint by name (used for writing messages"""
     if name not in datapoints_by_name:
-        raise NoDatapointFoundError
+        raise NoDatapointFoundError(str.format("No datapoint found with [name {}]", name))
 
     return datapoints_by_name[name]
 
@@ -65,6 +79,7 @@ def get_datapoint_by_name(name):
 def get_datapoint_by_id(function_group, function_number, datapoint_id):
     """Get datapoint by ids (used for reading messages)"""
     if (function_group, function_number, datapoint_id) not in datapoints_by_id:
-        raise NoDatapointFoundError
+        raise NoDatapointFoundError(str.format("No datapoint found with [function_group: {}, function_number: {}, "
+                                               "datapoint_id {}]", function_group, function_number, datapoint_id))
 
     return datapoints_by_id[(function_group, function_number, datapoint_id)]
