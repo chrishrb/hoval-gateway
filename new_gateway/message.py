@@ -46,8 +46,8 @@ class Message:
         return len(msg.data) > 2 and self.operation_id in Operation.list()
 
     def parse(self):
-        if len(self.data) < 7:
-            raise NoValidMessageException
+        if len(self.data) < 6:
+            raise NoValidMessageException("Message too short for parsing")
         function_group = self.data[2]
         function_number = self.data[3]
         function_datapoint = int.from_bytes(self.data[4:6], byteorder='big', signed=False)
@@ -55,8 +55,8 @@ class Message:
         return read_datapoint, Operation(self.operation_id), read_datapoint.get_datapoint_type().convert(self.data[6:])
 
     def __str__(self):
-        return str.format("Message: id: {}, priority: {}, operation: {}, nb_remaining: {}, device_type: {}, device_id: {}, "
-                          "data: {}",
+        return str.format("Message: id: {}, priority: {}, operation: {}, nb_remaining: {}, device_type: {}, "
+                          "device_id: {}, data: {}",
                           self.message_id,
                           self.priority,
                           Operation(self.operation_id),

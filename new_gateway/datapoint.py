@@ -14,7 +14,7 @@ class Datapoint:
         self.function_number = datapoint_from_settings["function_number"]
         self.datapoint_id = datapoint_from_settings["datapoint_id"]
         self.datatype = datapoint_from_settings["type"]
-        self.decimal = get_settings_data_safe(datapoint_from_settings, "decimal", int)
+        self.decimal = _get_settings_data_safe(datapoint_from_settings, "decimal", int)
 
     def get_datapoint_type(self):
         """Get type of datapoint"""
@@ -40,7 +40,7 @@ class Datapoint:
                           self.decimal)
 
 
-def get_settings_data_safe(datapoint_from_settings, column, data_type):
+def _get_settings_data_safe(datapoint_from_settings, column, data_type):
     """Get settings data safe (if data not there, set default ones)"""
     if column in datapoint_from_settings:
         return datapoint_from_settings[column]
