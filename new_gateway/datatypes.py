@@ -1,17 +1,15 @@
 from abc import abstractmethod
 
 
-class UnknownDatatypeError(Exception):
-    pass
-
-
 class Datatype:
+    """Abstract Datatype"""
     @abstractmethod
     def convert(self, value):
         pass
 
 
 class Unsigned(Datatype):
+    """Unsigned Datatype"""
     def __init__(self, decimal=0):
         self._decimal = decimal
 
@@ -24,6 +22,7 @@ class Unsigned(Datatype):
 
 
 class Signed(Datatype):
+    """Signed Datatype"""
     def __init__(self, decimal=0):
         self._decimal = decimal
 
@@ -36,6 +35,7 @@ class Signed(Datatype):
 
 
 class List(Datatype):
+    """List Datatype"""
     def convert(self, value):
         val = int.from_bytes(value, byteorder='big', signed=False)
         return round(val)
@@ -45,6 +45,7 @@ class List(Datatype):
 
 
 class String(Datatype):
+    """String Datatype"""
     def convert(self, value):
         return value.decode('utf-8')
 

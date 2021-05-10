@@ -11,5 +11,5 @@ class TestMessage(TestCase):
         parsed_message = Message(123, 0, 0x42, 1)
         msg = MagicMock(can.Message)
         msg.data = bytearray(b'2\x42\x00\x92\xe2\x00\xd2')
-        self.assertTrue(parsed_message.is_valid(msg))
+        self.assertTrue(parsed_message._is_valid(msg))
 

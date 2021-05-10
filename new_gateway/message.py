@@ -1,10 +1,11 @@
-import logging
 from enum import Enum
 
 from new_gateway import datapoint
+from new_gateway.exceptions import NoValidMessageException
 
 
 class Operation(Enum):
+    """Operations in CAN-Message"""
     RESPONSE = 0x42
     GET_REQUEST = 0x40
     SET_REQUEST = 0x46
@@ -15,9 +16,7 @@ class Operation(Enum):
 
 
 class Message:
-    """
-    Message - Basic Class for all Messages
-    """
+    """Message - Basic Class for all Messages"""
 
     def __init__(self, arbitration_id, message_len, operation_id, message_header):
         self.arbitration_id = arbitration_id
@@ -32,21 +31,23 @@ class Message:
         self.data = bytearray()
 
     def put(self, msg):
-        if not self.is_valid(msg):
+        if not self._is_valid(msg):
             return
         self.data.extend(msg.data)
         self.nb_remaining -= 1
 
     def put_extended_msg(self, msg):
-        if not self.is_valid(msg):
+        if not self._is_valid(msg):
             return
         self.data.extend(msg.data[:-2])
         self.nb_remaining -= 1
 
-    def is_valid(self, msg):
+    def _is_valid(self, msg):
         return len(msg.data) > 2 and self.operation_id in Operation.list()
 
     def parse(self):
+        if len(self.data) < 7:
+            raise NoValidMessageException
         function_group = self.data[2]
         function_number = self.data[3]
         function_datapoint = int.from_bytes(self.data[4:6], byteorder='big', signed=False)
@@ -79,3 +80,7 @@ def get_message_len(data):
 
 def get_operation_id(data):
     return data[1]
+
+
+def build_arbitration_id(prio, device_type, device_id):
+    return (prio << 16) | (device_type << 8) | device_id

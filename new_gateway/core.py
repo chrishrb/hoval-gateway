@@ -1,7 +1,6 @@
 import logging
 
-from new_gateway.datapoint import NoDatapointFoundError
-from new_gateway.datatypes import UnknownDatatypeError
+from new_gateway.exceptions import UnknownDatatypeError, NoValidMessageException, NoDatapointFoundError
 from new_gateway.message import get_message_header, get_message_len, get_message_id, \
     get_operation_id, Operation, Message
 
@@ -37,13 +36,11 @@ async def read(can0):
                               operation,
                               parsed_message)
 
-                # For mqtt
                 if operation == Operation.RESPONSE:
+                    # todo: add mqtt handler
                     pass
-            except UnknownDatatypeError as e:
+            except (UnknownDatatypeError, NoDatapointFoundError, NoValidMessageException) as e:
                 logging.error(e)
-            except NoDatapointFoundError as e:
-                logging.warning(e)
 
             del _pending_msg[get_message_header(msg.data)]
 
@@ -60,4 +57,10 @@ def add_to_pending_msg(msg):
 
 
 async def send(can0):
+    # todo: send can message
+    pass
+
+
+async def send_periodically(can0):
+    # todo: send can message periodically
     pass

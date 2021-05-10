@@ -1,15 +1,13 @@
-from new_gateway.datatypes import UnknownDatatypeError, Unsigned, Signed, List, String
+from new_gateway.datatypes import Unsigned, Signed, List, String
+from new_gateway.exceptions import UnknownDatatypeError, NoDatapointFoundError
 
 datapoints_by_name = {}
 datapoints_by_id = {}
 
 
-class NoDatapointFoundError(Exception):
-    pass
-
-
 class Datapoint:
     """Datapoint of CAN messages"""
+
     def __init__(self, datapoint_from_settings):
         self.name = datapoint_from_settings["name"]
         self.function_group = datapoint_from_settings["function_group"]
@@ -17,8 +15,6 @@ class Datapoint:
         self.datapoint_id = datapoint_from_settings["datapoint_id"]
         self.datatype = datapoint_from_settings["type"]
         self.decimal = get_settings_data_safe(datapoint_from_settings, "decimal", int)
-        self.read = get_settings_data_safe(datapoint_from_settings, "read", bool)
-        self.write = get_settings_data_safe(datapoint_from_settings, "write", bool)
 
     def get_datapoint_type(self):
         """Get type of datapoint"""
@@ -41,9 +37,7 @@ class Datapoint:
                           self.function_number,
                           self.datapoint_id,
                           self.datatype,
-                          self.decimal,
-                          self.read,
-                          self.write)
+                          self.decimal)
 
 
 def get_settings_data_safe(datapoint_from_settings, column, data_type):
@@ -61,17 +55,18 @@ def get_settings_data_safe(datapoint_from_settings, column, data_type):
 
 def parse_datapoints(element):
     """Save datapoints from settings.yaml"""
-    datapoints_by_id[(element["function_group"],
-                      element["function_number"],
-                      element["datapoint_id"])] = Datapoint(element)
-
-    datapoints_by_name[element["name"]] = Datapoint(element)
+    for datapoint_item in element:
+        dp = Datapoint(datapoint_item)
+        datapoints_by_id[(datapoint_item["function_group"],
+                          datapoint_item["function_number"],
+                          datapoint_item["datapoint_id"])] = dp
+        datapoints_by_name[datapoint_item["name"]] = dp
 
 
 def get_datapoint_by_name(name):
     """Get datapoint by name (used for writing messages"""
     if name not in datapoints_by_name:
-        raise NoDatapointFoundError(str.format("No datapoint found with [name {}]", name))
+        raise NoDatapointFoundError(str.format("No datapoint found with name [{}]", name))
 
     return datapoints_by_name[name]
 
