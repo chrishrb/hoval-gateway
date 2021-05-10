@@ -2,7 +2,7 @@ periodic_requests:
   - device_type: 10
     device_id: 8
     periodic_time: 30
-    prio: 208
+    priority: 208
     datapoints:
       - betriebswahl_lueftung
 

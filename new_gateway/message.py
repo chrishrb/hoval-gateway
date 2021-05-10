@@ -21,7 +21,7 @@ class Message:
     def __init__(self, arbitration_id, message_len, operation_id, message_header):
         self.arbitration_id = arbitration_id
         self.message_id = arbitration_id >> 24
-        self.prio = (arbitration_id >> 16) & 0xff
+        self.priority = (arbitration_id >> 16) & 0xff
         self.device_type = (arbitration_id >> 8) & 0xff
         self.device_id = arbitration_id & 0xff
         self.message_len = message_len
@@ -55,10 +55,10 @@ class Message:
         return read_datapoint, Operation(self.operation_id), read_datapoint.get_datapoint_type().convert(self.data[6:])
 
     def __str__(self):
-        return str.format("Message: id: {}, prio: {}, operation: {}, nb_remaining: {}, device_type: {}, device_id: {}, "
+        return str.format("Message: id: {}, priority: {}, operation: {}, nb_remaining: {}, device_type: {}, device_id: {}, "
                           "data: {}",
                           self.message_id,
-                          self.prio,
+                          self.priority,
                           Operation(self.operation_id),
                           self.nb_remaining,
                           self.device_type,
@@ -82,5 +82,5 @@ def get_operation_id(data):
     return data[1]
 
 
-def build_arbitration_id(prio, device_type, device_id):
-    return (prio << 16) | (device_type << 8) | device_id
+def build_arbitration_id(priority, device_type, device_id):
+    return (priority << 16) | (device_type << 8) | device_id
