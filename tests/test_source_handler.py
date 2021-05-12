@@ -14,17 +14,13 @@ class SerialHandlerTestCase(unittest.TestCase):
     """Test case for source_handler.SerialHandler."""
 
     def setUp(self):
-        # setup vcan interface for tests
-        pass
+        self.fail()
 
     def tearDown(self):
-        # todo: add close event
-        # self.vcan.close()
-        pass
+        self.fail()
 
-    def test_get_message(self):
-        # retrieve messages and test if vcan is working
-        pass
+    async def test_get_message(self):
+        self.fail()
 
 
 class CandumpHandlerTestCase(unittest.IsolatedAsyncioTestCase):
@@ -62,5 +58,9 @@ class CandumpHandlerTestCase(unittest.IsolatedAsyncioTestCase):
         for i in range(0, len(messages)):
             self.assertTrue(messages[i].equals(expected_messages[i]))
 
-        self.assertRaises(InvalidFrame, self.candump_handler.get_message)
-        self.assertRaises(EOFError, self.candump_handler.get_message)
+        with self.assertRaises(InvalidFrame):
+            await self.candump_handler.get_message()
+
+        with self.assertRaises(EOFError):
+            await self.candump_handler.get_message()
+

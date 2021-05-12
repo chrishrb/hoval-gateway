@@ -1,3 +1,8 @@
+class InvalidFrame(Exception):
+    """Invalid Frame returned by source handler"""
+    pass
+
+
 class NoValidMessageException(Exception):
     """If no valid message was found, e.g. message too small"""
     pass

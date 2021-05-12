@@ -4,9 +4,7 @@ import re
 
 import can
 
-
-class InvalidFrame(Exception):
-    pass
+from new_gateway.exceptions import InvalidFrame
 
 
 class SourceHandler:

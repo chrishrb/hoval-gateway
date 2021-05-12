@@ -29,6 +29,9 @@ class Datapoint:
         else:
             raise UnknownDatatypeError(str.format("Datatype {} not known", self.datatype))
 
+    def get_datapoint_by_bytes(self):
+        return self.datapoint_id.to_bytes(2, byteorder='big', signed=False)
+
     def __str__(self):
         return str.format("Datapoint: name: {}, function_group: {}, function_number: {}, datapoint_id: {}, "
                           "datatype: {}, decimal: {}, read: {}, write: {}",
