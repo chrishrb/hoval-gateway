@@ -45,7 +45,7 @@ class ResponseParser:
                 msg_header = msg.data[0]
                 if msg_header in self._pending_msg:
                     message = self._pending_msg[msg_header]
-                    message.put(MessageResponse(msg.data))
+                    message.put_data(MessageResponse(msg.data))
                     if message.nb_remaining == 0:
                         del self._pending_msg[msg_header]
 

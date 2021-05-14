@@ -28,11 +28,21 @@ class SourceHandler:
         """
         raise NotImplementedError
 
+    def send(self, message):
+        """Send can message"""
+        raise NotImplementedError
+
+    def send_periodic(self, message, time):
+        """Send periodic can messages"""
+        raise NotImplementedError
+
 
 class CanHandler(SourceHandler):
     """Handler for CAN interface"""
 
     def __init__(self, device_name):
+        # todo: add to constructor: bitrate, bustype
+        # todo: add loopback test interface??
         self._device_name = device_name
         self._bus_type = "socketcan"
         self.can0 = None
@@ -59,11 +69,18 @@ class CanHandler(SourceHandler):
             self.notifier.stop()
         if self.can0:
             self.can0.shutdown()
+            self.can0.stop_all_periodic_tasks()
         logging.debug("CAN Interface closed")
 
     def get_message(self):
         message = self.reader.get_message()
         return message
+
+    def send(self, message):
+        self.can0.send(message)
+
+    def send_periodic(self, message, time):
+        self.can0.send_periodic(message, time)
 
 
 class CandumpHandler(SourceHandler):
@@ -109,3 +126,9 @@ class CandumpHandler(SourceHandler):
             raise InvalidFrame("Can't decode message '{}': '{}'".format(line, err))
 
         return can.Message(timestamp=float(can_time), arbitration_id=can_id, data=can_data)
+
+    def send(self, message):
+        raise NotImplementedError
+
+    def send_periodic(self, message, time):
+        raise NotImplementedError

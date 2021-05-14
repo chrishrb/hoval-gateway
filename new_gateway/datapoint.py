@@ -18,10 +18,18 @@ class Datapoint:
 
     def get_datapoint_type(self):
         """Get type of datapoint"""
-        if self.datatype == "U8" or self.datatype == "U16" or self.datatype == "U32":
-            return Unsigned(self.decimal)
-        elif self.datatype == "S8" or self.datatype == "S16" or self.datatype == "S32":
-            return Signed(self.decimal)
+        if self.datatype == "U8":
+            return Unsigned(8, self.decimal)
+        elif self.datatype == "U16":
+            return Unsigned(16, self.decimal)
+        elif self.datatype == "U32":
+            return Unsigned(32, self.decimal)
+        elif self.datatype == "S8":
+            return Signed(8, self.decimal)
+        elif self.datatype == "S16":
+            return Signed(16, self.decimal)
+        elif self.datatype == "S32":
+            return Signed(32, self.decimal)
         elif self.datatype == "LIST":
             return List()
         elif self.datatype == "STR":
@@ -34,7 +42,7 @@ class Datapoint:
 
     def __str__(self):
         return str.format("Datapoint: name: {}, function_group: {}, function_number: {}, datapoint_id: {}, "
-                          "datatype: {}, decimal: {}, read: {}, write: {}",
+                          "datatype: {}, decimal: {}",
                           self.name,
                           self.function_group,
                           self.function_number,

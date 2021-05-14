@@ -5,7 +5,7 @@ import click
 import yaml
 
 from new_gateway import datapoint, request
-from new_gateway.core import read, send_periodically
+from new_gateway.core import read, send_periodic
 from new_gateway.source_handler import CanHandler, CandumpHandler
 
 
@@ -47,8 +47,8 @@ def run(verbose, file, settings):
     loop = asyncio.get_event_loop()
     try:
         asyncio.ensure_future(read(can0))
-        if file is not None:
-            asyncio.ensure_future(send_periodically(can0))
+        if file is None:
+            asyncio.ensure_future(send_periodic(can0))
         loop.run_forever()
     except KeyboardInterrupt:
         pass

@@ -68,7 +68,7 @@ class Message:
             data += body.data
 
         if data and point is not None:
-            return point.function_name, point.datatype.convert(data)
+            return point.function_name, point.datatype.convert_from_bytes(data)
 
         return None
 
