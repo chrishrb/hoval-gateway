@@ -11,6 +11,7 @@ TEST_DATA_DIR = path.abspath(path.join(path.dirname(__file__), 'data'))
 
 
 class SerialHandlerTestCase(unittest.TestCase):
+    # todo: add vcan test scenario
     """Test case for source_handler.SerialHandler."""
 
     def setUp(self):

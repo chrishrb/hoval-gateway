@@ -1,11 +1,9 @@
 import logging
 
-import can
-
 from new_gateway import datapoint
 from new_gateway.exceptions import UnknownDatatypeError, NoValidMessageException, NoDatapointFoundError
 from new_gateway.message import get_message_header, get_message_len, get_message_id, \
-    get_operation_id, Operation, Message, build_arbitration_id, ReceiveMessage, SendMessage
+    get_operation_id, Operation, build_arbitration_id, ReceiveMessage, SendMessage
 from new_gateway.request import periodic_requests
 
 _pending_msg = {}

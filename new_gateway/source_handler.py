@@ -40,18 +40,17 @@ class SourceHandler:
 class CanHandler(SourceHandler):
     """Handler for CAN interface"""
 
-    def __init__(self, device_name):
-        # todo: add to constructor: bitrate, bustype
-        # todo: add loopback test interface??
+    def __init__(self, device_name, bus_type="socketcan", bitrate=50000):
         self._device_name = device_name
-        self._bus_type = "socketcan"
+        self._bus_type = bus_type
+        self._bitrate = bitrate
         self.can0 = None
         self.notifier = None
         self.reader = None
 
     def open(self):
         logging.debug("Open CAN Interface..")
-        can0 = can.Bus(channel=self._device_name, bustype=self._bus_type, receive_own_messages=False)
+        can0 = can.Bus(channel=self._device_name, bustype=self._bus_type, bitrate=self.bitrate, receive_own_messages=False)
 
         loop = asyncio.get_event_loop()
         reader = can.AsyncBufferedReader(loop)
