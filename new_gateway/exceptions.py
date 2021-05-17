@@ -16,3 +16,8 @@ class UnknownDatatypeError(Exception):
 class NoDatapointFoundError(Exception):
     """If no datapoint was found in the settings file"""
     pass
+
+
+class VariableNotFoundError(Exception):
+    """Variable not found in env / settings"""
+    pass

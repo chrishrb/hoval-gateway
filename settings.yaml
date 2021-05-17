@@ -1,3 +1,9 @@
+mqtt:
+  enable: true
+  name: "hoval-gateway"
+  topic: "hoval-gw-new"
+  port: 8883
+
 periodic_requests:
   - device_type: 10
     device_id: 8

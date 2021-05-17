@@ -9,10 +9,8 @@ from new_gateway.request import periodic_requests
 _pending_msg = {}
 
 
-async def read(can0):
+async def read(can0, mqtt_client, topic):
     """Read data from CAN and export to mqtt"""
-    can0.open()
-
     while True:
         try:
             msg = await can0.get_message()
@@ -38,9 +36,12 @@ async def read(can0):
                               operation,
                               parsed_message)
 
-                if operation == Operation.RESPONSE:
-                    # todo: add mqtt handler
-                    pass
+                # Publish to mqtt server
+                if operation == Operation.RESPONSE and mqtt_client:
+                    topic_message = "{}/{}/status".format(topic, dp.name)
+
+                    logging.info("Send message to mqtt server: {} {}".format(topic_message, parsed_message))
+                    mqtt_client.publish(topic_message, parsed_message)
             except (UnknownDatatypeError, NoDatapointFoundError, NoValidMessageException) as e:
                 logging.error(e)
 
@@ -57,14 +58,17 @@ def add_to_pending_msg(msg):
         _pending_msg[get_message_header(msg.data)].put_extended_data(msg.data)
 
 
-async def send(can0):
+async def send(can0, mqtt_client):
     # todo: send can message
+    if mqtt_client is None:
+        logging.error("Sending not possible without mqtt client")
+
     pass
 
 
 async def send_periodic(can0):
-    payload = 0
-    operation = Operation.GET_REQUEST
+    _payload = 0
+    _operation = Operation.GET_REQUEST
 
     for request in periodic_requests:
         logging.debug(request)
@@ -72,10 +76,10 @@ async def send_periodic(can0):
         # build message
         arbitration_id = build_arbitration_id(request.priority, request.device_type, request.device_id)
         datapoint_of_message = datapoint.get_datapoint_by_name(request.datapoint_name)
-        message = SendMessage(arbitration_id, operation.value, datapoint_of_message)
+        message = SendMessage(arbitration_id, _operation.value, datapoint_of_message)
 
         # set data to 0
-        message.put_data([payload])
+        message.put_data([_payload])
         logging.debug("Send message: %s", message)
 
         # to can message
