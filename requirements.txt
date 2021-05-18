@@ -1,8 +1,6 @@
 aenum==3.0.0
 paho-mqtt==1.5.1
 python-can==3.3.4
-wrapt==1.12.1
-pythonlangutil~=0.1
 python-dotenv~=0.15.0
-pyserial~=3.5
 click~=7.1.2
+PyYAML~=5.4.1

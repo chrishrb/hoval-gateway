@@ -7,7 +7,9 @@ import click
 import yaml
 from dotenv import load_dotenv
 
-from gateway import datapoint, request, mqtt
+from gateway.mqtt import connect_mqtt
+from gateway.datapoint import parse_datapoints
+from gateway.request import parse_requests
 from gateway.core import read, send_periodic, send
 from gateway.exceptions import VariableNotFoundError
 from gateway.source_handler import CanHandler, CandumpHandler
@@ -47,9 +49,9 @@ def parse_settings(settings_file):
 
     for item, element in settings.items():
         if item == "datapoints":
-            datapoint.parse_datapoints(element)
+            parse_datapoints(element)
         if item == "requests":
-            request.parse_requests(element)
+            parse_requests(element)
         if item == "mqtt":
             parse_mqtt_settings(element)
 
@@ -88,7 +90,7 @@ def run(verbose, file, settings, environment_file):
     # Setup mqtt
     mqtt_client = None
     if _mqtt_settings["enable"]:
-        mqtt_client = mqtt.connect_mqtt(_mqtt_settings)
+        mqtt_client = connect_mqtt(_mqtt_settings)
 
     # Start can loop
     loop = asyncio.get_event_loop()
@@ -106,4 +108,4 @@ def run(verbose, file, settings, environment_file):
 
 
 if __name__ == "__main__":
-    run()
+    sys.exit(run())
