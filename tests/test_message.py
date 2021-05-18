@@ -1,5 +1,5 @@
 from unittest import TestCase
-import new_gateway.message as message
+import gateway.message as message
 
 
 class TestReceiveMessage(TestCase):

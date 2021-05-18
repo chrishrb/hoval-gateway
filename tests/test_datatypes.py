@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import new_gateway.datatypes as datatypes
+import gateway.datatypes as datatypes
 
 
 class TestUnsigned(TestCase):

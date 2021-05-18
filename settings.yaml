@@ -4,13 +4,15 @@ mqtt:
   topic: "hoval-gw-new"
   port: 8883
 
-periodic_requests:
+requests:
   - device_type: 10
     device_id: 8
     periodic_time: 30
     priority: 208
-    datapoints:
+    periodic:
       - betriebswahl_lueftung
+    subscribe:
+      - betriebswahl_lueftun
 
 datapoints:
   - name: betriebswahl_lueftung

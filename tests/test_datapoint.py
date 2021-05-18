@@ -1,6 +1,6 @@
 from unittest import TestCase
-import new_gateway.datapoint as datapoint
-from new_gateway.exceptions import NoDatapointFoundError
+import gateway.datapoint as datapoint
+from gateway.exceptions import NoDatapointFoundError
 
 
 class TestDatapoint(TestCase):

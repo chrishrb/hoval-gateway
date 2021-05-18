@@ -3,15 +3,14 @@ import logging
 import os
 import sys
 
-import paho.mqtt.client as mqtt
 import click
 import yaml
 from dotenv import load_dotenv
 
-from new_gateway import datapoint, request
-from new_gateway.core import read, send_periodic
-from new_gateway.exceptions import VariableNotFoundError
-from new_gateway.source_handler import CanHandler, CandumpHandler
+from gateway import datapoint, request, mqtt
+from gateway.core import read, send_periodic, send
+from gateway.exceptions import VariableNotFoundError
+from gateway.source_handler import CanHandler, CandumpHandler
 
 _mqtt_settings = {}
 
@@ -49,8 +48,8 @@ def parse_settings(settings_file):
     for item, element in settings.items():
         if item == "datapoints":
             datapoint.parse_datapoints(element)
-        if item == "periodic_requests":
-            request.parse_periodic_requests(element)
+        if item == "requests":
+            request.parse_requests(element)
         if item == "mqtt":
             parse_mqtt_settings(element)
 
@@ -89,11 +88,7 @@ def run(verbose, file, settings, environment_file):
     # Setup mqtt
     mqtt_client = None
     if _mqtt_settings["enable"]:
-        mqtt_client = mqtt.Client(_mqtt_settings["name"])
-        mqtt_client.username_pw_set(username=_mqtt_settings["username"], password=_mqtt_settings["password"])
-        if _mqtt_settings["port"] == 8883:
-            mqtt_client.tls_set_context()
-        mqtt_client.connect(_mqtt_settings["broker"], port=_mqtt_settings["port"])
+        mqtt_client = mqtt.connect_mqtt(_mqtt_settings)
 
     # Start can loop
     loop = asyncio.get_event_loop()
@@ -102,6 +97,7 @@ def run(verbose, file, settings, environment_file):
         asyncio.ensure_future(read(can0, mqtt_client, _mqtt_settings["topic"]))
         if file is None:
             asyncio.ensure_future(send_periodic(can0))
+        asyncio.ensure_future(send(can0, mqtt_client, _mqtt_settings["topic"]))
         loop.run_forever()
     except KeyboardInterrupt:
         pass

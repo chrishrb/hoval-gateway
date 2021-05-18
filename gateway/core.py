@@ -1,132 +1,116 @@
 import logging
 
-from gateway import settings
-from gateway.datapoint import Device, DatapointList
-from gateway.message import Message, MessageResponse, MessageRequest
+from gateway import datapoint
+from gateway.exceptions import UnknownDatatypeError, NoValidMessageException, NoDatapointFoundError
+from gateway.message import get_message_header, get_message_len, get_message_id, \
+    get_operation_id, Operation, build_arbitration_id, ReceiveMessage, SendMessage
+from gateway.mqtt import Subscriber
+from gateway.request import periodic_requests, subscribe_requests
+
+_pending_msg = {}
 
 
-class ResponseParser:
-    """
-    Parser for all messages
-    """
-    _pending_msg = {}
-    _devices = {}
+async def read(can0, mqtt_client, topic):
+    """Read data from CAN and export to mqtt"""
+    # no mqtt client
+    if not mqtt_client:
+        logging.error("Publishing not possible without mqtt client")
 
-    def parse(self, msg):
-        """
-        Parse all messages
+    while True:
+        try:
+            msg = await can0.get_message()
+        except EOFError:
+            break
 
-        :param msg:
-        :return:
-        """
-        if len(msg.data) < 2:
-            logging.error("Message too small")
-            return None
+        # Add message to pending
+        add_to_pending_msg(msg)
 
-        message = Message(msg.arbitration_id, (msg.data[0] >> 3), msg.data[1])
-        if message.operation_id in settings.OPERATIONS.values():
-            if message.device_id not in self._devices:
-                logging.info("New device detected - Id: %d / Type: %d", message.device_id, message.device_type)
-                self._devices[message.device_id] = Device(message.device_id, message.device_type)
+        # When no more messages are expected, parse data
+        if get_message_header(msg.data) in _pending_msg and \
+                _pending_msg[get_message_header(msg.data)].nb_remaining == 0:
+            process_message = _pending_msg[get_message_header(msg.data)]
+            logging.debug("Current message: %s", process_message)
 
-            if message.message_id == 0x1f:
-                if message.message_len == 0:
-                    message.put(MessageResponse(msg.data))
-                    if message.operation_id == settings.OPERATIONS["RESPONSE"]:
-                        return message.parse_data()
-                    else:
-                        logging.debug("Message data: " + str(message.parse_data()))
-                        logging.debug("arbitration_id: " + str(message.arbitration_id))
-                else:
-                    self._pending_msg[message.operation_id] = {
-                        message
-                    }
-            else:
-                msg_header = msg.data[0]
-                if msg_header in self._pending_msg:
-                    message = self._pending_msg[msg_header]
-                    message.put_data(MessageResponse(msg.data))
-                    if message.nb_remaining == 0:
-                        del self._pending_msg[msg_header]
+            try:
+                dp, operation, parsed_message = process_message.parse()
+                logging.debug("Message for datapoint [function_group: %s, function_number: %s, function_datapoint: "
+                              "%s, operation: %s] : %s",
+                              dp.function_group,
+                              dp.function_number,
+                              dp.datapoint_id,
+                              operation,
+                              parsed_message)
 
-                        if message.operation_id == settings.OPERATIONS["RESPONSE"]:
-                            return message.parse_data()
-                        else:
-                            logging.debug(message.parse_data())
-        return None
+                # Publish to mqtt broker
+                if operation == Operation.RESPONSE and mqtt_client:
+                    topic_message = "{}/{}/status".format(topic, dp.name)
+
+                    logging.info("Publish message to mqtt server: [{} {}]".format(topic_message, parsed_message))
+                    mqtt_client.publish(topic_message, parsed_message)
+            except (UnknownDatatypeError, NoDatapointFoundError, NoValidMessageException) as e:
+                logging.error(e)
+
+            del _pending_msg[get_message_header(msg.data)]
 
 
-class PeriodicRequest:
-    """
-    Periodic Requests to ask different datapoints (e.g. temperature, ..)
-    """
-    _message_len = 1
-    # todo: is this id okay??
-    _prio = 8160
-    _operation_id = settings.OPERATIONS["GET_REQUEST"]
-    _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
-    _tasks = []
-
-    def __init__(self, bus, device):
-        self._device = device
-        self._bus = bus
-
-    def start(self):
-        """
-        Start Periodic Requests
-
-        :return:
-        """
-        for datapoint in self._datapoint_list.datapoint_list:
-            if not datapoint.read:
-                continue
-
-            arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
-            message = Message(arbitration_id=arbitration_id, message_len=self._message_len,
-                              operation_id=self._operation_id)
-            message.put(MessageRequest(datapoint.function_name))
-            task = message.send_periodic(self._bus)
-            self._prio += 1
-            self._tasks += task
-
-    def stop(self):
-        """
-        Stopp all tasks
-
-        :return:
-        """
-        for task in self._tasks:
-            task.stop()
+def add_to_pending_msg(msg):
+    """Add message to queue"""
+    if get_message_id(msg.arbitration_id) == 0x1f:
+        parsed_msg = ReceiveMessage(msg.arbitration_id, get_operation_id(msg.data), get_message_len(msg.data))
+        parsed_msg.put_data(msg.data)
+        _pending_msg[get_message_header(msg.data)] = parsed_msg
+    elif get_message_header(msg.data) in _pending_msg:
+        _pending_msg[get_message_header(msg.data)].put_extended_data(msg.data)
 
 
-class SimpleRequest:
-    """
-    Simple request for one time requests
-    """
-    _message_len = 1
-    _prio = 8160
-    _datapoint_list = DatapointList(settings.DATAPOINT_LIST)
+async def send(can0, mqtt_client, topic):
+    """Retrieve messages from mqtt broker and send to can interface"""
+    if mqtt_client is None:
+        logging.error("Sending not possible without mqtt client")
+        return
 
-    def __init__(self, bus, device, operation, function_name):
-        self._device = device
-        self._arbitration_id = (self._prio << 16) | (self._device.device_type << 8) | self._device.device_id
-        self._function_name = function_name
-        self._operation_id = operation
-        self._bus = bus
+    # subscribe to topic
+    for request in subscribe_requests:
+        try:
+            datapoint_of_message = datapoint.get_datapoint_by_name(request)
+        except NoDatapointFoundError as e:
+            logging.error(e)
+            continue
 
-    def send(self, data):
-        """
-        Send a simple request
+        logging.debug("Subscribe to %s/%s/set", topic, datapoint_of_message.name)
+        mqtt_client.subscribe("{}/{}/set".format(topic, datapoint_of_message.name))
 
-        :param data:
-        :return:
-        """
-        datapoint = self._datapoint_list.get_datapoint_by_name(function_name=self._function_name)
-        if not datapoint:
-            return
+    # Handle received messages from mqtt broker
+    subscriber = Subscriber(can0, topic)
+    mqtt_client.on_message = subscriber.on_message
+    mqtt_client.loop_start()
 
-        message = Message(arbitration_id=self._arbitration_id, message_len=self._message_len,
-                          operation_id=self._operation_id)
-        message.put(MessageRequest(datapoint.function_name, data))
-        message.send(self._bus)
-        logging.debug("Request sent with data %s", str(data))
+
+async def send_periodic(can0):
+    """Send periodic requests to can interface"""
+    _payload = 0
+    _operation = Operation.GET_REQUEST
+
+    for request in periodic_requests:
+        logging.debug(request)
+
+        # build message
+        try:
+            datapoint_of_message = datapoint.get_datapoint_by_name(request.datapoint_name)
+        except NoDatapointFoundError as e:
+            logging.error(e)
+            continue
+
+        arbitration_id = build_arbitration_id(request.priority, request.device_type, request.device_id)
+        message = SendMessage(arbitration_id, _operation.value, datapoint_of_message)
+
+        # set data to 0
+        message.put_single_data(_payload)
+
+        # to can message
+        try:
+            can_message = message.to_can_message()
+            can0.send_periodic(can_message, request.periodic_time)
+            logging.debug("Send message: %s", message)
+        except NoValidMessageException as e:
+            logging.error(e)

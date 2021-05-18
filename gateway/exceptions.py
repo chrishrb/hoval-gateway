@@ -18,6 +18,11 @@ class NoDatapointFoundError(Exception):
     pass
 
 
+class NoRequestFoundError(Exception):
+    """If no Request was found"""
+    pass
+
+
 class VariableNotFoundError(Exception):
     """Variable not found in env / settings"""
     pass

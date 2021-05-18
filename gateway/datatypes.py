@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from new_gateway.exceptions import NoValidMessageException
+from gateway.exceptions import NoValidMessageException
 
 
 class Datatype:

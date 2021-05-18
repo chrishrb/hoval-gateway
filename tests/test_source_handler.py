@@ -5,7 +5,7 @@ from os import path
 
 from can import Message
 
-from new_gateway.source_handler import CandumpHandler, InvalidFrame
+from gateway.source_handler import CandumpHandler, InvalidFrame
 
 TEST_DATA_DIR = path.abspath(path.join(path.dirname(__file__), 'data'))
 
