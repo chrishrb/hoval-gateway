@@ -1,7 +1,7 @@
 mqtt:
   enable: true
   name: "hoval-gateway"
-  topic: "hoval-gw-new"
+  topic: "hoval-gateway"
   port: 8883
 
 requests:
@@ -11,8 +11,16 @@ requests:
     priority: 208
     periodic:
       - betriebswahl_lueftung
+      - normal_lueftungs_modulation
+      - spar_lueftungs_modulation
+      - feuchte_sollwert
+      - feuchtigkeit_abluft
+      - temperature_exhaust_air
+      - temperature_outside_air
     subscribe:
-      - betriebswahl_lueftun
+      - betriebswahl_lueftung
+      - normal_lueftungs_modulation
+      - spar_lueftungs_modulation
 
 datapoints:
   - name: betriebswahl_lueftung
@@ -64,8 +72,3 @@ datapoints:
     datapoint_id: 37602
     type: S16
     decimal: 1
-  - name: name_of_hv
-    function_group: 0
-    function_number: 0
-    datapoint_id: 4005
-    type: STR
