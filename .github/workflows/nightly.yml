@@ -1,0 +1,4 @@
+name: Nightly Test
+
+# Run the nightly tests at at 8 AM UTC / 1 AM Pacific
+# todo: add integration tests

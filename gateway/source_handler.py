@@ -2,7 +2,10 @@ import asyncio
 import logging
 import re
 
-import can
+from can.interface import Bus
+from can.listener import AsyncBufferedReader
+from can.message import Message
+from can.notifier import Notifier
 
 from gateway.exceptions import InvalidFrame
 
@@ -49,12 +52,12 @@ class CanHandler(SourceHandler):
 
     def open(self):
         logging.debug("Open CAN Interface..")
-        can0 = can.Bus(channel=self._device_name, bustype=self._bus_type, receive_own_messages=False)
+        can0 = Bus(channel=self._device_name, bustype=self._bus_type, receive_own_messages=False)
 
         loop = asyncio.get_event_loop()
-        reader = can.AsyncBufferedReader(loop)
+        reader = AsyncBufferedReader(loop)
         listeners = [reader]
-        notifier = can.Notifier(can0, listeners, loop=loop)
+        notifier = Notifier(can0, listeners, loop=loop)
 
         self.can0 = can0
         self.reader = reader
@@ -123,7 +126,7 @@ class CandumpHandler(SourceHandler):
         except ValueError as err:
             raise InvalidFrame("Can't decode message '{}': '{}'".format(line, err))
 
-        return can.Message(timestamp=float(can_time), arbitration_id=can_id, data=can_data)
+        return Message(timestamp=float(can_time), arbitration_id=can_id, data=can_data)
 
     def send(self, message):
         raise NotImplementedError

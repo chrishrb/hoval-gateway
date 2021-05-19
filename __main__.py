@@ -19,7 +19,12 @@ _mqtt_settings = {}
 
 def get_env_settings_safe(env_name, settings_name, settings, default=None):
     if env_name in os.environ:
-        return os.getenv(env_name)
+        if os.getenv(env_name).lower() in ('true', '1'):
+            return True
+        elif os.getenv(env_name).lower() in ('false', '0'):
+            return False
+        else:
+            return os.getenv(env_name)
     elif settings_name in settings:
         return settings[settings_name]
     elif default is not None:
@@ -31,16 +36,15 @@ def get_env_settings_safe(env_name, settings_name, settings, default=None):
 
 def parse_mqtt_settings(element):
     try:
-        _mqtt_settings["enable"] = get_env_settings_safe("MQTT_ENABLE", "enable", element, True)
+        _mqtt_settings["enable"] = get_env_settings_safe("MQTT_ENABLE", "enable", element, default=True)
         _mqtt_settings["name"] = get_env_settings_safe("MQTT_NAME", "name", element)
-        _mqtt_settings["topic"] = get_env_settings_safe("MQTT_TOPIC", "topic", element, "hoval-gw")
+        _mqtt_settings["topic"] = get_env_settings_safe("MQTT_TOPIC", "topic", element, default="hoval-gw")
         _mqtt_settings["broker"] = get_env_settings_safe("MQTT_BROKER", "broker", element)
         _mqtt_settings["username"] = get_env_settings_safe("MQTT_USERNAME", "username", element)
         _mqtt_settings["password"] = get_env_settings_safe("MQTT_PASSWORD", "password", element)
-        _mqtt_settings["port"] = get_env_settings_safe("MQTT_PORT", "port", element, "1883")
+        _mqtt_settings["port"] = get_env_settings_safe("MQTT_PORT", "port", element, default="1883")
     except VariableNotFoundError as e:
         logging.error(e)
-        sys.exit(1)
 
 
 def parse_settings(settings_file):
@@ -61,7 +65,7 @@ def parse_settings(settings_file):
 @click.option('-f', '--file', type=click.Path(resolve_path=True), help="Read can messages from file")
 @click.option('-s', '--settings', required=True, type=click.File(), help="Read settings file")
 @click.option('-e', '--environment-file', type=click.Path(resolve_path=True), help="Read env file")
-def run(verbose, file, settings, environment_file):
+def main(verbose, file, settings, environment_file):
     """
     Run main application with can interface
     """
@@ -108,4 +112,4 @@ def run(verbose, file, settings, environment_file):
 
 
 if __name__ == "__main__":
-    sys.exit(run())
+    sys.exit(main())

@@ -5,7 +5,8 @@ from gateway.exceptions import NoDatapointFoundError
 
 class TestDatapoint(TestCase):
     def test_get_datapoint_type(self):
-        self.fail()
+        # todo: implement
+        pass
 
 
 class Test(TestCase):

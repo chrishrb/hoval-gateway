@@ -1,6 +1,8 @@
 aenum==3.0.0
 paho-mqtt==1.5.1
 python-can==3.3.4
-python-dotenv~=0.15.0
-click~=7.1.2
+python-dotenv==0.17.1
+click==8.0.0
 PyYAML~=5.4.1
+flake8~=3.9.2
+setuptools~=56.2.0
