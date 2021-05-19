@@ -70,9 +70,9 @@ async def send(can0, mqtt_client, topic):
         return
 
     # subscribe to topic
-    for request in subscribe_requests:
+    for key, request in subscribe_requests.items():
         try:
-            datapoint_of_message = datapoint.get_datapoint_by_name(request)
+            datapoint_of_message = datapoint.get_datapoint_by_name(key)
         except NoDatapointFoundError as e:
             logging.error(e)
             continue
@@ -91,7 +91,7 @@ async def send_periodic(can0):
     _payload = 0
     _operation = Operation.GET_REQUEST
 
-    for request in periodic_requests:
+    for key, request in periodic_requests.items():
         logging.debug(request)
 
         # build message

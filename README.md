@@ -1,4 +1,6 @@
 # Hoval Gateway (CAN Bus)
+![PR-CI](https://github.com/chrishrb/hoval-gateway/actions/workflows/pr-ci.yml/badge.svg)
+
 This repository contains a simple Gateway for Hoval ventilations and other applicances.
 Most of the logic and the idea is from this repository: https://github.com/zittix/Hoval-GW 
 
@@ -21,9 +23,16 @@ This repository is simply a demo and not for production use. Use with caution!
 If you found any issues or improvements feel free to add pull requests or an issue!
 
 ## Setup required
-
+### Hardware
 1. Raspberry PI
 2. CAN Transceiver and adapter (or simply a complete board e.g. PiCAN2)
+
+#### Pinout of RJ45 CAN
+```
+1: CAN-HIGH
+2: CAN-LOW
+7: GND
+```
 
 ### Instructions
 1. Install Raspbian
@@ -68,16 +77,17 @@ sudo vim /etc/rc.local
 ip link set can0 up type can bitrate 50000
 ```
 
-6. Reboot
-7. Start Script
+7. Reboot
+8. Start Script
 
 ## After Install 
 ### MQTT
 - To use this script you need to setup a mqtt server or use a public one
-- For this after-install usecase i will also create a repository soon (home assistant integration)
-- the dashboard seen above will be released soon
 
-#### Topics
+### Home Assistant
+- the dashboard seen above is released under `docs/configuration.yml` and `docs/automations.yml`
+
+### Topics
 MQTT-Topics are standardized in the structure: 
 - for requesting data: *MQTT_TOPIC*/*DATAPOINT_NAME*/status
 - for setting new values: *MQTT_TOPIC*/*DATAPOINT_NAME*/set
