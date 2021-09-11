@@ -54,7 +54,7 @@ class Subscriber:
         # todo: support all types of all length
         # set data and send
         try:
-            message.put_data(datapoint_of_message.get_datapoint_type().convert_to_bytes(msg.payload))
+            message.put_data(datapoint_of_message.get_datapoint_type().convert_to_bytes(msg.payload.decode()))
             can_message = message.to_can_message()
             self.can0.send(can_message)
             logging.debug("Send message: %s", message)

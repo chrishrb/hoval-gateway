@@ -69,6 +69,7 @@ def main(verbose, file, settings, environment_file):
     """
     Run main application with can interface
     """
+    logging.basicConfig()
     # Choose right handler
     if file is None:
         can0 = CanHandler("can0")
@@ -77,9 +78,9 @@ def main(verbose, file, settings, environment_file):
 
     # Verbose output
     if verbose is True:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger().setLevel(logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.INFO)
+        logging.getLogger().setLevel(logging.INFO)
 
     # load dotenv
     # todo: parse envs from command line instead of reading env file

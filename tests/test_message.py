@@ -78,9 +78,3 @@ class TestSendMessage(IsolatedAsyncioTestCase):
         self.assertEqual(message.Operation.SET_REQUEST.value, msg_rcv.operation_id)
         self.assertEqual(0, msg_rcv.nb_remaining)
         self.assertEqual(5, datatype.convert_from_bytes(msg_rcv.data[6:]))
-
-    def test_put_single_data(self):
-        self.fail()
-
-    def test_to_can_message(self):
-        self.fail()

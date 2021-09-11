@@ -1,3 +1,4 @@
+import re
 import struct
 from abc import abstractmethod
 
@@ -28,6 +29,7 @@ class Unsigned(Datatype):
         return round(val * 10 ** (-self._decimal), 2)
 
     def convert_to_bytes(self, value):
+        value = parse_str(value)
         if not (isinstance(value, int) or isinstance(value, float)) or value < 0:
             raise NoValidMessageException(str.format("Message is no int/float or is smaller than 0: {}", value))
         return struct.pack('!H', value)
@@ -57,6 +59,7 @@ class Signed(Datatype):
         return round(val * 10 ** (-self._decimal), 2)
 
     def convert_to_bytes(self, value):
+        value = parse_str(value)
         if not isinstance(value, int) or isinstance(value, float):
             raise NoValidMessageException(str.format("Message is no int/float: {}", value))
         return struct.pack('!h', value)
@@ -108,3 +111,14 @@ class String(Datatype):
         return "String"
 
 
+def parse_str(num):
+    """
+    Parse a string that is expected to contain a number.
+    :param num: str. the number in string.
+    :return: float or int. Parsed num.
+    """
+    if re.compile('^\s*\d+\s*$').search(num):
+        return int(num)
+    if re.compile('^\s*(\d*\.\d+)|(\d+\.\d*)\s*$').search(num):
+        return float(num)
+    raise NoValidMessageException('num is not a number. Got {}.'.format(num))  # optional

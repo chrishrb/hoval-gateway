@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import gateway.datatypes as datatypes
+from gateway.exceptions import NoValidMessageException
 
 
 class TestUnsigned(TestCase):
@@ -17,7 +18,7 @@ class TestUnsigned(TestCase):
         self.assertEqual(150, converted_number_16)
 
     def test_convert_from_bytes_decimal(self):
-        datatype = datatypes.Unsigned(1)
+        datatype = datatypes.Unsigned(2)
 
         converted_number_8 = datatype.convert_from_bytes(self.number_8)
         converted_number_16 = datatype.convert_from_bytes(self.number_16)
@@ -68,3 +69,17 @@ class TestString(TestCase):
     def test_convert_to_bytes(self):
         # todo: add test
         pass
+
+
+class TestParseStringMethod(TestCase):
+    def test_parse_int(self):
+        number = datatypes.parse_str('12')
+        self.assertEqual(12, number)
+
+    def test_parse_float(self):
+        number = datatypes.parse_str('12.123')
+        self.assertEqual(12.123, number)
+
+    def test_parse_wrong(self):
+        with self.assertRaises(NoValidMessageException):
+            datatypes.parse_str('example123')
