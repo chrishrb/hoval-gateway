@@ -1,14 +1,14 @@
 mqtt:
   enable: true
   name: "hoval-gateway"
-  topic: "hoval-gateway"
+  topic: "hoval-gw"
   port: 8883
 
 requests:
   - device_type: 10
     device_id: 8
     periodic_time: 30
-    priority: 208
+    priority: 8160
     periodic:
       - betriebswahl_lueftung
       - normal_lueftungs_modulation
@@ -27,11 +27,6 @@ datapoints:
     function_group: 50
     function_number: 0
     datapoint_id: 40650
-    type: LIST
-  - name: normal_lueftungs_modulation
-    function_group: 50
-    function_number: 0
-    datapoint_id: 40651
     type: LIST
   - name: normal_lueftungs_modulation
     function_group: 50

@@ -87,6 +87,7 @@ class List(Datatype):
         return round(val)
 
     def convert_to_bytes(self, value):
+        value = parse_str(value)
         if not isinstance(value, int) or value < 0:
             raise NoValidMessageException(str.format("Message is no int or is smaller than 0: {}", value))
         return struct.pack('!B', value)

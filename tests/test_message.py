@@ -10,7 +10,7 @@ from gateway.source_handler import CanHandler
 
 class TestMessage(TestCase):
     def test_arbitration_id(self):
-        arbitration_id = message.build_arbitration_id(31, 208, 71, 255)
+        arbitration_id = message.build_arbitration_id(8160, 71, 255)
         self.assertEqual(31, message.get_message_id(arbitration_id))
         self.assertEqual(208, message.get_message_priority(arbitration_id))
         self.assertEqual(71, message.get_message_device_type(arbitration_id))
@@ -50,8 +50,8 @@ class TestReceiveMessage(TestCase):
 
 class TestSendMessage(IsolatedAsyncioTestCase):
     def setUp(self):
-        arbitration_id = message.build_arbitration_id(31, 120, 10, 8)
-        datapoint = Datapoint(name="example_datapoint", function_group=50, function_number=0, datapoint_id=40667,
+        arbitration_id = message.build_arbitration_id(8160, 10, 8)
+        datapoint = Datapoint(name="example_datapoint", function_group=50, function_number=0, datapoint_id=40651,
                               datatype="U16", decimal=1)
         self.msg = message.SendMessage(arbitration_id, message.Operation.SET_REQUEST.value, datapoint)
         self.can0 = CanHandler('vcan', 'virtual')
@@ -60,7 +60,7 @@ class TestSendMessage(IsolatedAsyncioTestCase):
     async def test_put_data(self):
         # given
         datatype = List()
-        self.msg.put_data(datatype.convert_to_bytes(5))
+        self.msg.put_data(datatype.convert_to_bytes(37))
         can_msg = self.msg.to_can_message()
         self.can0.send(can_msg)
 
@@ -71,10 +71,11 @@ class TestSendMessage(IsolatedAsyncioTestCase):
         msg_rcv.put_data(receive_message.data)
 
         # then
+        print(receive_message)
         self.assertEqual(31, msg_rcv.message_id)
-        self.assertEqual(120, msg_rcv.priority)
+        self.assertEqual(224, msg_rcv.priority)
         self.assertEqual(10, msg_rcv.device_type)
         self.assertEqual(8, msg_rcv.device_id)
         self.assertEqual(message.Operation.SET_REQUEST.value, msg_rcv.operation_id)
         self.assertEqual(0, msg_rcv.nb_remaining)
-        self.assertEqual(5, datatype.convert_from_bytes(msg_rcv.data[6:]))
+        self.assertEqual(37, datatype.convert_from_bytes(msg_rcv.data[6:]))

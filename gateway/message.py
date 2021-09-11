@@ -74,7 +74,7 @@ class SendMessage(Message):
 
     def __init__(self, arbitration_id, operation_id, datapoint_of_message):
         super().__init__(arbitration_id, operation_id)
-        self.message_len = 0
+        self.message_len = 1
         self.header_data = bytearray()
         self._put_header(datapoint_of_message)
 
@@ -138,5 +138,5 @@ def get_operation_id(data):
     return data[1]
 
 
-def build_arbitration_id(msg_id, priority, device_type, device_id):
-    return (msg_id << 24) | (priority << 16) | (device_type << 8) | device_id
+def build_arbitration_id(priority, device_type, device_id):
+    return (priority << 16) | (device_type << 8) | device_id

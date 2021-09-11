@@ -48,7 +48,7 @@ class Subscriber:
             return
 
         # build message
-        arbitration_id = build_arbitration_id(31, request.priority, request.device_type, request.device_id)
+        arbitration_id = build_arbitration_id(request.priority, request.device_type, request.device_id)
         message = SendMessage(arbitration_id, self._operation.value, datapoint_of_message)
 
         # todo: support all types of all length
