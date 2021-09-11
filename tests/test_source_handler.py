@@ -23,7 +23,7 @@ class SerialHandlerTestCase(unittest.TestCase):
         # todo: add test
         pass
 
-    async def test_get_message(self):
+    def test_get_message(self):
         # todo: add test
         pass
 

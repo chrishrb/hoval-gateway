@@ -138,5 +138,5 @@ def get_operation_id(data):
     return data[1]
 
 
-def build_arbitration_id(priority, device_type, device_id):
-    return (priority << 16) | (device_type << 8) | device_id
+def build_arbitration_id(message_id, priority, device_type, device_id):
+    return (message_id << 24) | (priority << 16) | (device_type << 8) | device_id

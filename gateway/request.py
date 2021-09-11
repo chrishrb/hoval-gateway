@@ -14,6 +14,7 @@ class Request:
         self.device_type = device_type
         self.device_id = device_id
         self.datapoint_name = datapoint_name
+        self.message_id = 31
         self.priority = priority
 
 

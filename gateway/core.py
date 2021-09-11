@@ -101,7 +101,8 @@ async def send_periodic(can0):
             logging.error(e)
             continue
 
-        arbitration_id = build_arbitration_id(request.priority, request.device_type, request.device_id)
+        arbitration_id = build_arbitration_id(request.message_id, request.priority, request.device_type,
+                                              request.device_id)
         message = SendMessage(arbitration_id, _operation.value, datapoint_of_message)
 
         # set data to 0

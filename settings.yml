@@ -8,7 +8,7 @@ requests:
   - device_type: 10
     device_id: 8
     periodic_time: 30
-    priority: 8160
+    priority: 224
     periodic:
       - betriebswahl_lueftung
       - normal_lueftungs_modulation
