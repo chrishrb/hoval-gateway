@@ -46,9 +46,10 @@ class CanHandler(SourceHandler):
     def __init__(self, device_name, bus_type="socketcan"):
         self._device_name = device_name
         self._bus_type = bus_type
-        self.can0 = None
-        self.notifier = None
-        self.reader = None
+        self.can0, self.reader, self.notifier = self.open()
+
+    def __del__(self):
+        self.close()
 
     def open(self):
         logging.debug("Open CAN Interface..")
@@ -59,10 +60,8 @@ class CanHandler(SourceHandler):
         listeners = [reader]
         notifier = Notifier(can0, listeners, loop=loop)
 
-        self.can0 = can0
-        self.reader = reader
-        self.notifier = notifier
         logging.debug("CAN Interface opened")
+        return can0, reader, notifier
 
     def close(self):
         logging.debug("Close CAN Interface..")
@@ -92,12 +91,14 @@ class CandumpHandler(SourceHandler):
 
     def __init__(self, file_path):
         self.file_path = file_path
-        self.file_object = None
+        self.file_object = self.open()
+
+    def __del__(self):
+        self.close()
 
     def open(self):
         logging.debug("Open fake CANDUMP Interface (file)..")
-        self.file_object = open(self.file_path, 'rt', encoding='utf-8')
-        logging.debug("Fake CANDUMP Interface (file) opened")
+        return open(self.file_path, 'rt', encoding='utf-8')
 
     def close(self):
         logging.debug("Close fake CANDUMP Interface (file)..")

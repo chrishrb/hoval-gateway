@@ -101,7 +101,7 @@ async def send_periodic(can0):
             logging.error(e)
             continue
 
-        arbitration_id = build_arbitration_id(request.priority, request.device_type, request.device_id)
+        arbitration_id = build_arbitration_id(31, request.priority, request.device_type, request.device_id)
         message = SendMessage(arbitration_id, _operation.value, datapoint_of_message)
 
         # set data to 0
@@ -112,5 +112,5 @@ async def send_periodic(can0):
             can_message = message.to_can_message()
             can0.send_periodic(can_message, request.periodic_time)
             logging.debug("Send message: %s", message)
-        except NoValidMessageException as e:
+        except (ValueError, NoValidMessageException) as e:
             logging.error(e)

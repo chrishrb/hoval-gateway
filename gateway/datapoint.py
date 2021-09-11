@@ -8,13 +8,13 @@ datapoints_by_id = {}
 class Datapoint:
     """Datapoint of CAN messages"""
 
-    def __init__(self, datapoint_from_settings):
-        self.name = datapoint_from_settings["name"]
-        self.function_group = datapoint_from_settings["function_group"]
-        self.function_number = datapoint_from_settings["function_number"]
-        self.datapoint_id = datapoint_from_settings["datapoint_id"]
-        self.datatype = datapoint_from_settings["type"]
-        self.decimal = _get_settings_data_safe(datapoint_from_settings, "decimal", int)
+    def __init__(self, name, function_group, function_number, datapoint_id, datatype, decimal):
+        self.name = name
+        self.function_group = function_group
+        self.function_number = function_number
+        self.datapoint_id = datapoint_id
+        self.datatype = datatype
+        self.decimal = decimal
 
     def get_datapoint_type(self):
         """Get type of datapoint"""
@@ -67,7 +67,12 @@ def _get_settings_data_safe(datapoint_from_settings, column, data_type):
 def parse_datapoints(element):
     """Save datapoints from settings.yaml"""
     for datapoint_item in element:
-        dp = Datapoint(datapoint_item)
+        dp = Datapoint(name=datapoint_item["name"],
+                       function_group=datapoint_item["function_group"],
+                       function_number=datapoint_item["function_number"],
+                       datapoint_id=datapoint_item["datapoint_id"],
+                       datatype=datapoint_item["type"],
+                       decimal=_get_settings_data_safe(datapoint_item, "decimal", int))
         datapoints_by_id[(datapoint_item["function_group"],
                           datapoint_item["function_number"],
                           datapoint_item["datapoint_id"])] = dp

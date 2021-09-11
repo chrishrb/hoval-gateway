@@ -4,6 +4,7 @@ import random
 from paho.mqtt import client as mqtt_client
 
 from gateway import datapoint
+from gateway.datapoint import Datapoint
 from gateway.exceptions import NoDatapointFoundError, NoRequestFoundError, NoValidMessageException
 from gateway.message import SendMessage, build_arbitration_id, Operation
 from gateway.request import get_subscribe_request_by_name
@@ -41,24 +42,19 @@ class Subscriber:
 
         try:
             request = get_subscribe_request_by_name(datapoint_name)
-            datapoint_of_message = datapoint.get_datapoint_by_name(request.datapoint_name)
+            datapoint_of_message: Datapoint = datapoint.get_datapoint_by_name(request.datapoint_name)
         except (NoRequestFoundError, NoDatapointFoundError) as e:
             logging.error(e)
             return
 
         # build message
-        arbitration_id = build_arbitration_id(request.priority, request.device_type, request.device_id)
+        arbitration_id = build_arbitration_id(31, request.priority, request.device_type, request.device_id)
         message = SendMessage(arbitration_id, self._operation.value, datapoint_of_message)
 
-        # set data
-        # todo: check before send
         # todo: support all types of all length
-        print(msg.payload)
-        message.put_data(msg.payload)
-        logging.debug("Message to send %s", message)
-
-        # to can message
+        # set data and send
         try:
+            message.put_data(datapoint_of_message.get_datapoint_type().convert_to_bytes(msg.payload))
             can_message = message.to_can_message()
             self.can0.send(can_message)
             logging.debug("Send message: %s", message)

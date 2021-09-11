@@ -99,7 +99,6 @@ def main(verbose, file, settings, environment_file):
     # Start can loop
     loop = asyncio.get_event_loop()
     try:
-        can0.open()
         asyncio.ensure_future(read(can0, mqtt_client, _mqtt_settings["topic"]))
         if file is None:
             asyncio.ensure_future(send_periodic(can0))
@@ -107,8 +106,6 @@ def main(verbose, file, settings, environment_file):
         loop.run_forever()
     except KeyboardInterrupt:
         pass
-    finally:
-        can0.close()
 
 
 if __name__ == "__main__":

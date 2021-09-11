@@ -1,3 +1,4 @@
+import struct
 from abc import abstractmethod
 
 from gateway.exceptions import NoValidMessageException
@@ -28,11 +29,20 @@ class Unsigned(Datatype):
 
     def convert_to_bytes(self, value):
         if not (isinstance(value, int) or isinstance(value, float)) or value < 0:
-            raise NoValidMessageException(str.format("Message is no int or is smaller than 0: {}", value))
-        return [value]
+            raise NoValidMessageException(str.format("Message is no int/float or is smaller than 0: {}", value))
+        return struct.pack('!H', value)
+
+    @staticmethod
+    def get_format(length):
+        if length == 8:
+            return '!B'
+        elif length == 16:
+            return '!H'
+        elif length == 32:
+            return '!I'
 
     def __str__(self):
-        return "Unsigned"
+        return "Unsigned with length {} bit and decimal {}".format(self._length, self._decimal)
 
 
 class Signed(Datatype):
@@ -47,12 +57,21 @@ class Signed(Datatype):
         return round(val * 10 ** (-self._decimal), 2)
 
     def convert_to_bytes(self, value):
-        if not (isinstance(value, int) or isinstance(value, float)) or value < 0:
-            raise NoValidMessageException(str.format("Message is no int: {}", value))
-        return [value]
+        if not isinstance(value, int) or isinstance(value, float):
+            raise NoValidMessageException(str.format("Message is no int/float: {}", value))
+        return struct.pack('!h', value)
+
+    @staticmethod
+    def get_format(length):
+        if length == 8:
+            return '!b'
+        elif length == 16:
+            return '!h'
+        elif length == 32:
+            return '!i'
 
     def __str__(self):
-        return "Signed"
+        return "Signed with length {} bit and decimal {}".format(self._length, self._decimal)
 
 
 class List(Datatype):
@@ -67,10 +86,10 @@ class List(Datatype):
     def convert_to_bytes(self, value):
         if not isinstance(value, int) or value < 0:
             raise NoValidMessageException(str.format("Message is no int or is smaller than 0: {}", value))
-        return [value]
+        return struct.pack('!B', value)
 
     def __str__(self):
-        return "List"
+        return "List with length {} bit".format(self._length)
 
 
 class String(Datatype):
@@ -82,7 +101,10 @@ class String(Datatype):
     def convert_to_bytes(self, value):
         if not isinstance(value, str):
             raise NoValidMessageException(str.format("Message is no str: {}", value))
+        # todo: test if string encoding is working
         return value.encode()
 
     def __str__(self):
         return "String"
+
+

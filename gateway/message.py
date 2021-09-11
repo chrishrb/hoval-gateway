@@ -66,7 +66,7 @@ class ReceiveMessage(Message):
                "device_type: {}, device_id: {}, data: {}".format(self.message_id, self.priority,
                                                                  Operation(self.operation_id), self.nb_remaining,
                                                                  self.message_len, self.device_type, self.device_id,
-                                                                 self.data)
+                                                                 self.data[6:])
 
 
 class SendMessage(Message):
@@ -114,6 +114,18 @@ def get_message_id(arbitration_id):
     return arbitration_id >> 24
 
 
+def get_message_priority(arbitration_id):
+    return arbitration_id >> 16 & 0xff
+
+
+def get_message_device_type(arbitration_id):
+    return arbitration_id >> 8 & 0xfff
+
+
+def get_message_device_id(arbitration_id):
+    return arbitration_id & 0xff
+
+
 def get_message_header(data):
     return data[0]
 
@@ -126,5 +138,5 @@ def get_operation_id(data):
     return data[1]
 
 
-def build_arbitration_id(priority, device_type, device_id):
-    return (priority << 16) | (device_type << 8) | device_id
+def build_arbitration_id(msg_id, priority, device_type, device_id):
+    return (msg_id << 24) | (priority << 16) | (device_type << 8) | device_id
