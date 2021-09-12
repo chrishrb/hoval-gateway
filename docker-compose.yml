@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+  hoval-gateway:
+    build:
+      context: .
+      target: prod
+    container_name: hoval-gateway
+    environment:
+      MQTT_ENABLE: "False"
+    volumes:
+      - ./settings.yml:/app/settings.yml
+      - ./tests/data/test_lueftung_data_3.log:/app/test_data.log
+    command: -s settings.yml -v -f test_data.log

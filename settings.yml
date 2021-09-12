@@ -1,0 +1,69 @@
+mqtt:
+  enable: true
+  name: "hoval-gateway"
+  topic: "hoval-gw"
+  port: 8883
+
+requests:
+  - device_type: 10
+    device_id: 8
+    periodic_time: 30
+    priority: 224
+    periodic:
+      - betriebswahl_lueftung
+      - normal_lueftungs_modulation
+      - spar_lueftungs_modulation
+      - feuchte_sollwert
+      - feuchtigkeit_abluft
+      - temperature_exhaust_air
+      - temperature_outside_air
+    subscribe:
+      - betriebswahl_lueftung
+      - normal_lueftungs_modulation
+      - spar_lueftungs_modulation
+
+datapoints:
+  - name: betriebswahl_lueftung
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40650
+    type: LIST
+  - name: normal_lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40651
+    type: LIST
+  - name: spar_lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40686
+    type: LIST
+  - name: lueftungs_modulation
+    function_group: 50
+    function_number: 0
+    datapoint_id: 38606
+    type: LIST
+  - name: feuchte_sollwert
+    function_group: 50
+    function_number: 0
+    datapoint_id: 40687
+    type: U16
+    decimal: 1
+  - name: feuchtigkeit_abluft
+    function_group: 50
+    function_number: 0
+    datapoint_id: 37600
+    type: U16
+    decimal: 1
+  - name: temperature_outside_air
+    function_group: 50
+    function_number: 0
+    datapoint_id: 0
+    type: S16
+    decimal: 1
+  - name: temperature_exhaust_air
+    function_group: 50
+    function_number: 0
+    datapoint_id: 37602
+    type: S16
+    decimal: 1
