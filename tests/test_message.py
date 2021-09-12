@@ -57,6 +57,10 @@ class TestSendMessage(IsolatedAsyncioTestCase):
         self.can0 = CanHandler('vcan', 'virtual')
         self.can1 = CanHandler('vcan', 'virtual')
 
+    def tearDown(self):
+        self.can0.close()
+        self.can1.close()
+
     async def test_put_data(self):
         # given
         datatype = List()

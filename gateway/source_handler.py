@@ -48,9 +48,6 @@ class CanHandler(SourceHandler):
         self._bus_type = bus_type
         self.can0, self.reader, self.notifier = self.open()
 
-    def __del__(self):
-        self.close()
-
     def open(self):
         logging.debug("Open CAN Interface..")
         can0 = Bus(channel=self._device_name, bustype=self._bus_type, receive_own_messages=False)
@@ -68,8 +65,8 @@ class CanHandler(SourceHandler):
         if self.notifier:
             self.notifier.stop()
         if self.can0:
-            self.can0.shutdown()
             self.can0.stop_all_periodic_tasks()
+            self.can0.shutdown()
         logging.debug("CAN Interface closed")
 
     def get_message(self):
@@ -92,9 +89,6 @@ class CandumpHandler(SourceHandler):
     def __init__(self, file_path):
         self.file_path = file_path
         self.file_object = self.open()
-
-    def __del__(self):
-        self.close()
 
     def open(self):
         logging.debug("Open fake CANDUMP Interface (file)..")

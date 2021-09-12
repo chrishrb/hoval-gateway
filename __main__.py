@@ -106,7 +106,10 @@ def main(verbose, file, settings, environment_file):
         asyncio.ensure_future(send(can0, mqtt_client, _mqtt_settings["topic"]))
         loop.run_forever()
     except KeyboardInterrupt:
+        logging.info("Program exit..")
         pass
+    finally:
+        can0.close()
 
 
 if __name__ == "__main__":

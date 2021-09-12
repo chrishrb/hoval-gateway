@@ -94,11 +94,11 @@ class SendMessage(Message):
         self.put_data([data])
 
     def to_can_message(self):
-        # todo: split into more can messages if too long
         can_data = bytearray()
         can_data.extend(self.header_data)
         can_data.extend(self.data)
 
+        # todo: split into more can messages if too long
         if len(self.data) + len(self.header_data) > self._message_size:
             raise NoValidMessageException("Message is too long")
 

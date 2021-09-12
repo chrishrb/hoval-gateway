@@ -37,6 +37,9 @@ class CandumpHandlerTestCase(IsolatedAsyncioTestCase):
         file_path = path.join(TEST_DATA_DIR, 'test_data.log')
         self.candump_handler = CandumpHandler(file_path)
 
+    def tearDown(self):
+        self.candump_handler.close()
+
     async def test_get_message(self):
         messages = [await self.candump_handler.get_message() for _ in range(7)]
 
