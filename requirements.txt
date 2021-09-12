@@ -6,3 +6,4 @@ click==8.0.1
 PyYAML~=5.4.1
 flake8~=3.9.2
 setuptools~=56.2.0
+fastnumbers~=3.1.0
