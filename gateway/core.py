@@ -89,6 +89,7 @@ async def send(can0, mqtt_client, topic):
 async def send_periodic(can0):
     """Send periodic requests to can interface"""
     _payload = 0
+    _message_id = 31
     _operation = Operation.GET_REQUEST
 
     for key, request in periodic_requests.items():
@@ -101,7 +102,8 @@ async def send_periodic(can0):
             logging.error(e)
             continue
 
-        arbitration_id = build_arbitration_id(request.message_id, request.priority, request.device_type,
+        _message_id += 1
+        arbitration_id = build_arbitration_id(_message_id, request.priority, request.device_type,
                                               request.device_id)
         message = SendMessage(arbitration_id, _operation.value, datapoint_of_message)
 
