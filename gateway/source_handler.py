@@ -124,7 +124,7 @@ class CandumpHandler(SourceHandler):
         return Message(timestamp=float(can_time), arbitration_id=can_id, data=can_data)
 
     def send(self, message):
-        raise NotImplementedError
+        print(message)
 
     def send_periodic(self, message, time):
         raise NotImplementedError

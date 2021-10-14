@@ -109,6 +109,7 @@ def main(verbose, file, settings, environment_file):
         logging.info("Program exit..")
         pass
     finally:
+        mqtt_client.loop_stop()
         can0.close()
 
 

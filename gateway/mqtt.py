@@ -7,24 +7,44 @@ from gateway import datapoint
 from gateway.datapoint import Datapoint
 from gateway.exceptions import NoDatapointFoundError, NoRequestFoundError, NoValidMessageException
 from gateway.message import SendMessage, build_arbitration_id, Operation
-from gateway.request import get_subscribe_request_by_name
+from gateway.request import get_subscribe_request_by_name, subscribe_requests
+
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        logging.info("Connected to MQTT Broker!")
+        subscribe_topics(client, userdata["topic"])
+    else:
+        logging.error("Failed to connect, return code %d\n", rc)
+
+
+def on_disconnect(client, userdata, rc):
+    logging.error("Client Got Disconnected")
 
 
 def connect_mqtt(mqtt_settings):
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            logging.info("Connected to MQTT Broker!")
-        else:
-            logging.error("Failed to connect, return code %d\n", rc)
-
     client_id = f'{mqtt_settings["name"]}-{random.randint(0, 1000)}'
-    client = mqtt_client.Client(client_id)
+    client = mqtt_client.Client(client_id, userdata=mqtt_settings)
     client.username_pw_set(mqtt_settings["username"], mqtt_settings["password"])
     client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
     if mqtt_settings["port"] == 8883:
         client.tls_set_context()
     client.connect(mqtt_settings["broker"], mqtt_settings["port"])
     return client
+
+
+def subscribe_topics(client, topic):
+    # subscribe to topic
+    for key, request in subscribe_requests.items():
+        try:
+            datapoint_of_message = datapoint.get_datapoint_by_name(key)
+        except NoDatapointFoundError as e:
+            logging.error(e)
+            continue
+
+        logging.debug("Subscribe to %s/%s/set", topic, datapoint_of_message.name)
+        client.subscribe("{}/{}/set".format(topic, datapoint_of_message.name))
 
 
 class Subscriber:

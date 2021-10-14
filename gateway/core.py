@@ -48,7 +48,7 @@ async def read(can0, mqtt_client, topic):
                     logging.info("Publish message to mqtt server: [{} {}]".format(topic_message, parsed_message))
                     mqtt_client.publish(topic_message, parsed_message)
             except (UnknownDatatypeError, NoDatapointFoundError, NoValidMessageException) as e:
-                logging.error(e)
+                logging.debug(e)
 
             del _pending_msg[get_message_header(msg.data)]
 
@@ -68,17 +68,6 @@ async def send(can0, mqtt_client, topic):
     if mqtt_client is None:
         logging.error("Sending not possible without mqtt client")
         return
-
-    # subscribe to topic
-    for key, request in subscribe_requests.items():
-        try:
-            datapoint_of_message = datapoint.get_datapoint_by_name(key)
-        except NoDatapointFoundError as e:
-            logging.error(e)
-            continue
-
-        logging.debug("Subscribe to %s/%s/set", topic, datapoint_of_message.name)
-        mqtt_client.subscribe("{}/{}/set".format(topic, datapoint_of_message.name))
 
     # Handle received messages from mqtt broker
     subscriber = Subscriber(can0, topic)
