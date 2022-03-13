@@ -47,14 +47,14 @@ datapoints:
     function_group: 50
     function_number: 0
     datapoint_id: 40687
-    type: U16
-    decimal: 1
+    type: U8
+    decimal: 0
   - name: feuchtigkeit_abluft
     function_group: 50
     function_number: 0
     datapoint_id: 37600
-    type: U16
-    decimal: 1
+    type: U8
+    decimal: 0
   - name: temperature_outside_air
     function_group: 50
     function_number: 0
