@@ -25,7 +25,7 @@ If you found any issues or improvements feel free to add pull requests or an iss
 ## Setup required
 ### Hardware
 1. Raspberry PI
-2. CAN Transceiver and adapter (or simply a complete board e.g. PiCAN2)
+2. CAN Transceiver and adapter (or simply a complete board e.g. PiCAN2 or [CanHat](https://www.waveshare.com/2-ch-can-hat.htm))
 
 #### Pinout of RJ45 CAN
 ```
@@ -49,6 +49,12 @@ sudo vim /boot/config.txt
 dtparam=spi=on 
 dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25 
 dtoverlay=spi-bcm2835-overlay
+#### or for 2ch-CanHat
+#dtparam=spi=on
+#dtoverlay=mcp2515-can1,oscillator=16000000,interrupt=25
+#dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=23
+#dtoverlay=spi-bcm2835-overlay
+
 ```
 3. Install and setup can-utils and python3
 ```bash
@@ -78,7 +84,7 @@ ip link set can0 up type can bitrate 50000
 ```
 
 7. Reboot
-8. Start Script
+8. Start Script ```python3 . -s settings.yml```
 
 ## After Install 
 ### MQTT
