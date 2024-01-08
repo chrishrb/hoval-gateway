@@ -2,7 +2,7 @@ aenum==3.1.15
 paho-mqtt==1.5.1
 python-can==4.3.1
 python-dotenv==0.17.1
-click==8.0.1
+click==8.1.7
 PyYAML~=5.4.1
 flake8~=7.0.0
 setuptools~=69.0.3
