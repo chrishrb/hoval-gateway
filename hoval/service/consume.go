@@ -41,7 +41,7 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 	// TODO: handle data that is more than 2 bytes
 	length := msg.Data[0]
 	if length > 2 {
-		return nil, fmt.Errorf("data length exceeds 2 bytes: %w", hoval.ErrInvalidMessageLength)
+		return nil, fmt.Errorf("data length exceeds 2 bytes (%d): %w", length, hoval.ErrInvalidMessageLength)
 	}
 
 	operationID := hoval.Operation(msg.Data[1])
