@@ -1,49 +1,33 @@
-.PHONY: help clean clean-pyc clean-build list test coverage release
+GOCMD=go
 
-help:
-	@echo "  clean-build -          Remove build artifacts"
-	@echo "  clean-pyc -            Remove Python file artifacts"
-	@echo "  lint -                 Check style with flake8"
-	@echo "  test -                 Run tests quickly with the default Python"
-	@echo "  install-requirements - install the requirements for development"
-	@echo "  build                  Builds the docker images for the docker-compose setup"
-	@echo "  docker-rm              Stops and removes all docker containers"
-	@echo "  run                    Run a command. Can run scripts, e.g. make run COMMAND=\"./scripts/schema_generator.sh\""
-	@echo "  shell                  Opens a Bash shell"
+.PHONY: all
+all: generate build format lint gosec integration ## Format, lint, build and test
 
-clean: clean-build clean-pyc docker-rm
+.PHONY: generate
+generate: ## Generate
+	${GOCMD} generate ./...
+	${GOCMD} mod tidy
 
-clean-build:
-	rm -fr build/
-	rm -fr dist/
-	rm -fr *.egg-info
+.PHONY: test
+test: ## Test
+	${GOCMD} test ./...
 
-clean-pyc:
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
+.PHONY: build
+build: ## Build
+	${GOCMD} build -o bin/ ./...
 
-lint:
-	flake8 .
+.PHONY: integration
+integration: ## Run unit and integration tests
+	${GOCMD} test -tags=integration ./...
 
-test:
-	docker-compose run hoval-gateway test
+.PHONY: format
+format: ## Format code
+	${GOCMD} fmt ./...
 
-install-requirements:
-	pip install -r requirements/requirements.txt
+.PHONY: lint
+lint: ## Run linter
+	golangci-lint run ./...
 
-build:
-	docker-compose build
-
-docker-rm: stop
-	docker-compose rm -f
-
-shell:
-	docker-compose run --entrypoint "/bin/bash" hoval-gateway
-
-run:
-	docker-compose run hoval-gateway $(COMMAND)
-
-stop:
-	docker-compose down
-	docker-compose stop
+.PHONY: help
+help: ## Display this help screen
+	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
