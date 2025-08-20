@@ -1,0 +1,69 @@
+package service
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"github.com/chrishrb/hoval-gateway/hoval"
+	"github.com/chrishrb/hoval-gateway/hoval/datatype"
+	"github.com/chrishrb/hoval-gateway/transport"
+)
+
+type ConsumeService struct {
+	store *hoval.DatapointStore
+	// mqttSender  *api.Emiter
+}
+
+func NewConsumeService(store *hoval.DatapointStore) *ConsumeService {
+	return &ConsumeService{
+		store: store,
+	}
+}
+
+func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message) {
+	if message == nil {
+		slog.Debug("received nil message, ignoring")
+		return
+	}
+
+	hovalMsg, err := s.FromTransportMessage(*message)
+	if err != nil {
+		slog.Error("failed to convert transport message to hoval message", "error", err)
+	}
+
+	slog.Debug("received hoval message", "message", hovalMsg)
+
+	// TODO: handle the hoval message, e.g., publish to MQTT or process further
+}
+
+func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Message, error) {
+	// TODO: handle data that is more than 2 bytes
+	length := msg.Data[0]
+	if length > 2 {
+		return nil, fmt.Errorf("data length exceeds 2 bytes: %w", hoval.ErrInvalidMessageLength)
+	}
+
+	operationID := hoval.Operation(msg.Data[1])
+	fnGroup := msg.Data[2]
+	fnNumber := msg.Data[3]
+	datapointID := uint16(msg.Data[4])<<8 | uint16(msg.Data[5])
+
+	datapoint := s.store.LookupByIdentifier(hoval.FunctionGroup(fnGroup), fnNumber, datapointID)
+	if datapoint == nil {
+		return nil, fmt.Errorf("unknown datapoint: function group %d, function number %d, datapoint ID %d", fnGroup, fnNumber, datapointID)
+	}
+
+	data, err := datatype.FromBytes(datapoint.DatapointType, msg.Data[6:6+length], datapoint.DecimalPlaces)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal data: %w", err)
+	}
+
+	return &hoval.Message{
+		SenderID:     (msg.ID >> 11) & 0x7FF,
+		ReceiverMask: msg.ID & 0x7FF,
+		OperationID:  operationID,
+		Datapoint:    *datapoint,
+		Data:         data,
+	}, nil
+}
