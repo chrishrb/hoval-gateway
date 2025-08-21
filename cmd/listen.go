@@ -25,6 +25,25 @@ var listenCmd = &cobra.Command{
 		store := inmemory.NewStore(clock.RealClock{})
 		consumeSvc := service.NewConsumeService(store)
 
+		handlerFunc := func(ctx context.Context, message *transport.Message) {
+			if message == nil {
+				slog.Debug("received nil message, ignoring")
+				return
+			}
+
+			hovalMsg, err := consumeSvc.FromTransportMessage(*message)
+			if err != nil {
+				slog.Error("failed to convert transport message to hoval message", "error", err)
+				return
+			}
+
+			if hovalMsg.Datapoint == nil {
+				return
+			}
+
+			slog.Debug("received hoval message", "message", hovalMsg)
+		}
+
 		var canConn transport.Connection
 		var err error
 		if mockFile != "" {
@@ -35,7 +54,7 @@ var listenCmd = &cobra.Command{
 
 			// Get messages from the can bus
 			errCh := make(chan error, 1)
-			canConn, err = consumer.Consume(context.Background(), consumeSvc)
+			canConn, err = consumer.Consume(context.Background(), transport.MessageHandlerFunc(handlerFunc))
 			if err != nil {
 				errCh <- err
 			}
