@@ -43,7 +43,7 @@ func TestToTransportMessage(t *testing.T) {
 		1153,
 		1,
 		0x40,
-		*ventilationModeSelection,
+		ventilationModeSelection,
 		uint8(1),
 	)
 
@@ -66,7 +66,7 @@ func TestToTransportMessageInvalidData(t *testing.T) {
 		1153,
 		1,
 		0x40,
-		*ventilationModeSelection,
+		ventilationModeSelection,
 		uint32(12),
 	)
 

@@ -52,7 +52,7 @@ func TestFromTransportMessage(t *testing.T) {
 	assert.Equal(t, uint32(1153), msg.SenderID)
 	assert.Equal(t, uint32(1), msg.ReceiverMask)
 	assert.Equal(t, hoval.Operation(0x40), msg.OperationID)
-	assert.Equal(t, *ventilationModeSelection, msg.Datapoint)
+	assert.Equal(t, ventilationModeSelection, msg.Datapoint)
 	assert.Equal(t, uint8(1), msg.Data)
 }
 
