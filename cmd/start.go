@@ -28,7 +28,7 @@ to quickly create a Cobra application.`,
 		// sender := mock.NewSender(dummyBus)
 
 		store := inmemory.NewStore(clock.RealClock{})
-		consumeSvc := service.NewConsumeService(store)
+		consumeSvc := service.NewConsumeService(store, nil)
 
 		// Get messages from the can bus
 		errCh := make(chan error, 1)

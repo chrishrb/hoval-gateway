@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/chrishrb/hoval-gateway/config"
 	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
 	"github.com/chrishrb/hoval-gateway/store"
@@ -11,14 +12,16 @@ import (
 )
 
 type SendService struct {
-	store     store.Engine
-	canSender transport.Sender
+	store      store.Engine
+	dpProvider config.DatapointProvider
+	canSender  transport.Sender
 }
 
-func NewSendService(store store.Engine, sender transport.Sender) *SendService {
+func NewSendService(store store.Engine, dpProvider config.DatapointProvider, sender transport.Sender) *SendService {
 	return &SendService{
-		store:     store,
-		canSender: sender,
+		store:      store,
+		dpProvider: dpProvider,
+		canSender:  sender,
 	}
 }
 
@@ -26,19 +29,28 @@ func (s *SendService) Handle(ctx context.Context, message *transport.Message) {
 }
 
 func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message, error) {
+	// Get datapoint from provider
+	if msg.DatapointName == nil {
+		return nil, fmt.Errorf("datapoint name is required")
+	}
+
+	datapoint := s.dpProvider.GetByName(*msg.DatapointName)
+	if datapoint == nil {
+		return nil, fmt.Errorf("datapoint not found: %s", *msg.DatapointName)
+	}
+
 	data := new([8]byte)
 
 	// Add Operation ID
 	data[1] = byte(msg.OperationID)
 
 	// Add Datapoint information
-	dp := msg.Datapoint
-	data[2] = byte(dp.FunctionGroup)
-	data[3] = byte(dp.FunctionNumber)
-	data[4], data[5] = byte(dp.DatapointID>>8), byte(dp.DatapointID)
+	data[2] = byte(datapoint.FunctionGroup)
+	data[3] = byte(datapoint.FunctionNumber)
+	data[4], data[5] = byte(datapoint.DatapointID>>8), byte(datapoint.DatapointID)
 
 	// Add data
-	d, err := datatype.ToBytes(dp.DatapointType, msg.Data, dp.DecimalPlaces)
+	d, err := datatype.ToBytes(datatype.Type(datapoint.TypeName), msg.Data, int(datapoint.Decimal))
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal data: %w", err)
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/chrishrb/hoval-gateway/config"
 	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
 	"github.com/chrishrb/hoval-gateway/store"
@@ -12,13 +13,15 @@ import (
 )
 
 type ConsumeService struct {
-	store store.Engine
+	store      store.Engine
+	dpProvider config.DatapointProvider
 	// mqttSender  *api.Emiter
 }
 
-func NewConsumeService(store store.Engine) *ConsumeService {
+func NewConsumeService(store store.Engine, dpProvider config.DatapointProvider) *ConsumeService {
 	return &ConsumeService{
-		store: store,
+		store:      store,
+		dpProvider: dpProvider,
 	}
 }
 
@@ -36,7 +39,7 @@ func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message)
 
 	s.store.SetDevice(hovalMsg.SenderID, &hoval.Device{Address: hovalMsg.SenderID})
 
-	if hovalMsg.Datapoint == nil {
+	if hovalMsg.DatapointName == nil {
 		return
 	}
 
@@ -57,7 +60,7 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 	fnNumber := msg.Data[3]
 	datapointID := uint16(msg.Data[4])<<8 | uint16(msg.Data[5])
 
-	datapoint := s.store.LookupDatapointByIdentifier(hoval.FunctionGroup(fnGroup), fnNumber, datapointID)
+	datapoint := s.dpProvider.GetByFunction(fnGroup, fnNumber, datapointID)
 	if datapoint == nil {
 		slog.Error("unknown datapoint", "functionGroup", fnGroup, "functionNumber", fnNumber, "datapointID", datapointID)
 
@@ -68,16 +71,18 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 		}, nil
 	}
 
-	data, err := datatype.FromBytes(datapoint.DatapointType, msg.Data[6:6+length], datapoint.DecimalPlaces)
+	data, err := datatype.FromBytes(datatype.Type(datapoint.TypeName), msg.Data[6:6+length], int(datapoint.Decimal))
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal data: %w", err)
 	}
 
+	dpName := datapoint.DatapointName
+
 	return &hoval.Message{
-		SenderID:     (msg.ID >> 11) & 0x7FF,
-		ReceiverMask: msg.ID & 0x7FF,
-		OperationID:  operationID,
-		Datapoint:    datapoint,
-		Data:         data,
+		SenderID:      (msg.ID >> 11) & 0x7FF,
+		ReceiverMask:  msg.ID & 0x7FF,
+		OperationID:   operationID,
+		DatapointName: &dpName,
+		Data:          data,
 	}, nil
 }

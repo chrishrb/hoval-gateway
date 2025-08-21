@@ -13,24 +13,24 @@ type Message struct {
 	// SenderID is the ID of the sender device
 	SenderID uint32
 	// ReceiverMask is a bitmask of receiver IDs that should receive this message
-	ReceiverMask uint32
-	OperationID  Operation
-	Datapoint    *Datapoint
-	Data         any
+	ReceiverMask  uint32
+	OperationID   Operation
+	DatapointName *string
+	Data          any
 }
 
 func NewMessage(
 	senderID,
 	receiverMask uint32,
 	operationID Operation,
-	datapoint *Datapoint,
+	datapointName *string,
 	data any,
 ) *Message {
 	return &Message{
-		SenderID:     senderID,
-		ReceiverMask: receiverMask,
-		OperationID:  operationID,
-		Datapoint:    datapoint,
-		Data:         data,
+		SenderID:      senderID,
+		ReceiverMask:  receiverMask,
+		OperationID:   operationID,
+		DatapointName: datapointName,
+		Data:          data,
 	}
 }

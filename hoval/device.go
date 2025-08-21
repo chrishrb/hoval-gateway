@@ -4,6 +4,12 @@ type Device struct {
 	Address uint32
 }
 
+func NewDevice(address uint32) *Device {
+	return &Device{
+		Address: address,
+	}
+}
+
 func (d *Device) GetName() string {
 	if d.Address >= 1 && d.Address <= 16 {
 		return "WEZ"

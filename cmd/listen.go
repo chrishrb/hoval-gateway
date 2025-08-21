@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/chrishrb/hoval-gateway/config"
+	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
 	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
@@ -22,8 +24,13 @@ var listenCmd = &cobra.Command{
 		canInterface, _ := cmd.Flags().GetString("interface")
 		mockFile, _ := cmd.Flags().GetString("mock-file")
 
+		dpProvider, err := config.NewCsvDatapointProvider("config/datapoints.csv")
+		if err != nil {
+			return err
+		}
+
 		store := inmemory.NewStore(clock.RealClock{})
-		consumeSvc := service.NewConsumeService(store)
+		consumeSvc := service.NewConsumeService(store, dpProvider)
 
 		handlerFunc := func(ctx context.Context, message *transport.Message) {
 			if message == nil {
@@ -37,15 +44,15 @@ var listenCmd = &cobra.Command{
 				return
 			}
 
-			if hovalMsg.Datapoint == nil {
+			if hovalMsg.DatapointName == nil {
 				return
 			}
 
-			slog.Debug("received hoval message", "message", hovalMsg)
+			device := hoval.NewDevice(hovalMsg.SenderID)
+			slog.Info("received hoval message", "senderID", hovalMsg.SenderID, "senderType", device.GetName(), "datapoint", *hovalMsg.DatapointName, "data", hovalMsg.Data)
 		}
 
 		var canConn transport.Connection
-		var err error
 		if mockFile != "" {
 			slog.Info("Using mock CAN bus", "file", mockFile)
 

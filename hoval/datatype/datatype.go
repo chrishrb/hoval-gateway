@@ -2,19 +2,20 @@ package datatype
 
 import (
 	"errors"
+	"fmt"
 )
 
-type Type int
+type Type string
 
 const (
-	U8 Type = iota
-	U16
-	U32
-	S8
-	S16
-	S32
-	List
-	String
+	U8     Type = "U8"
+	U16    Type = "U16"
+	U32    Type = "U32"
+	S8     Type = "S8"
+	S16    Type = "S16"
+	S32    Type = "S32"
+	List   Type = "List"
+	String Type = "String"
 )
 
 var (
@@ -63,7 +64,7 @@ func ToBytes(t Type, data any, decimal int) ([]byte, error) {
 		return StringToBytes(d)
 	}
 
-	return nil, ErrInvalidDataType
+	return nil, fmt.Errorf("invalid data type: %v", t)
 }
 
 func FromBytes(t Type, data []byte, decimal int) (any, error) {
@@ -91,5 +92,5 @@ func FromBytes(t Type, data []byte, decimal int) (any, error) {
 		return StringFromBytes(data)
 	}
 
-	return nil, ErrInvalidDataType
+	return nil, fmt.Errorf("invalid data type: %v", t)
 }

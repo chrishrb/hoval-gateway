@@ -4,40 +4,21 @@ import (
 	"testing"
 
 	"github.com/chrishrb/hoval-gateway/hoval"
-	"github.com/chrishrb/hoval-gateway/hoval/datatype"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
-	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupConsumeSvc() (*service.ConsumeService, store.Engine) {
-	ventilationModeSelection := hoval.Datapoint{
-		FunctionGroup:  50,
-		FunctionNumber: 0,
-		DatapointID:    40650,
-		DatapointType:  datatype.List,
-	}
-	example := hoval.Datapoint{
-		FunctionGroup:  10,
-		FunctionNumber: 0,
-		DatapointID:    40650,
-		DatapointType:  datatype.S32,
-	}
-
+func setupConsumeSvc() *service.ConsumeService {
+	dpProvider := &DatapointProviderMock{}
 	store := inmemory.NewStore(nil)
-	store.SetDatapoint("ventilation-selection", &ventilationModeSelection)
-	store.SetDatapoint("example", &example)
-	return service.NewConsumeService(store), store
+	return service.NewConsumeService(store, dpProvider)
 }
 
 func TestFromTransportMessage(t *testing.T) {
-	svc, store := setupConsumeSvc()
-
-	ventilationModeSelection := store.LookupDatapointByName("ventilation-selection")
-	require.NotNil(t, ventilationModeSelection)
+	svc := setupConsumeSvc()
 
 	tMsg := transport.Message{
 		ID:     0x1fe40801,
@@ -52,12 +33,12 @@ func TestFromTransportMessage(t *testing.T) {
 	assert.Equal(t, uint32(1153), msg.SenderID)
 	assert.Equal(t, uint32(1), msg.ReceiverMask)
 	assert.Equal(t, hoval.Operation(0x40), msg.OperationID)
-	assert.Equal(t, ventilationModeSelection, msg.Datapoint)
+	assert.Equal(t, "TestDatapoint", *msg.DatapointName)
 	assert.Equal(t, uint8(1), msg.Data)
 }
 
 func TestFromTransportMessageInvalidData(t *testing.T) {
-	svc, _ := setupConsumeSvc()
+	svc := setupConsumeSvc()
 
 	// Too long data
 	tMsg := transport.Message{
