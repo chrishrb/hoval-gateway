@@ -6,12 +6,14 @@ import (
 	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
+	"github.com/chrishrb/hoval-gateway/store"
+	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupConsumeSvc() (*service.ConsumeService, *hoval.DatapointStore) {
+func setupConsumeSvc() (*service.ConsumeService, store.Engine) {
 	ventilationModeSelection := hoval.Datapoint{
 		FunctionGroup:  50,
 		FunctionNumber: 0,
@@ -25,16 +27,16 @@ func setupConsumeSvc() (*service.ConsumeService, *hoval.DatapointStore) {
 		DatapointType:  datatype.S32,
 	}
 
-	store := hoval.NewDatapointStore()
-	store.Add("ventilation-selection", ventilationModeSelection)
-	store.Add("example", example)
+	store := inmemory.NewStore(nil)
+	store.SetDatapoint("ventilation-selection", &ventilationModeSelection)
+	store.SetDatapoint("example", &example)
 	return service.NewConsumeService(store), store
 }
 
 func TestFromTransportMessage(t *testing.T) {
 	svc, store := setupConsumeSvc()
 
-	ventilationModeSelection := store.LookupByName("ventilation-selection")
+	ventilationModeSelection := store.LookupDatapointByName("ventilation-selection")
 	require.NotNil(t, ventilationModeSelection)
 
 	tMsg := transport.Message{

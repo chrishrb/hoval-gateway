@@ -7,15 +7,16 @@ import (
 
 	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
+	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/transport"
 )
 
 type ConsumeService struct {
-	store *hoval.DatapointStore
+	store store.Engine
 	// mqttSender  *api.Emiter
 }
 
-func NewConsumeService(store *hoval.DatapointStore) *ConsumeService {
+func NewConsumeService(store store.Engine) *ConsumeService {
 	return &ConsumeService{
 		store: store,
 	}
@@ -30,6 +31,13 @@ func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message)
 	hovalMsg, err := s.FromTransportMessage(*message)
 	if err != nil {
 		slog.Error("failed to convert transport message to hoval message", "error", err)
+		return
+	}
+
+	s.store.SetDevice(hovalMsg.SenderID, &hoval.Device{Address: hovalMsg.SenderID})
+
+	if hovalMsg.Datapoint == nil {
+		return
 	}
 
 	slog.Debug("received hoval message", "message", hovalMsg)
@@ -49,9 +57,15 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 	fnNumber := msg.Data[3]
 	datapointID := uint16(msg.Data[4])<<8 | uint16(msg.Data[5])
 
-	datapoint := s.store.LookupByIdentifier(hoval.FunctionGroup(fnGroup), fnNumber, datapointID)
+	datapoint := s.store.LookupDatapointByIdentifier(hoval.FunctionGroup(fnGroup), fnNumber, datapointID)
 	if datapoint == nil {
-		return nil, fmt.Errorf("unknown datapoint: function group %d, function number %d, datapoint ID %d", fnGroup, fnNumber, datapointID)
+		slog.Error("unknown datapoint", "functionGroup", fnGroup, "functionNumber", fnNumber, "datapointID", datapointID)
+
+		return &hoval.Message{
+			SenderID:     (msg.ID >> 11) & 0x7FF,
+			ReceiverMask: msg.ID & 0x7FF,
+			OperationID:  operationID,
+		}, nil
 	}
 
 	data, err := datatype.FromBytes(datapoint.DatapointType, msg.Data[6:6+length], datapoint.DecimalPlaces)
@@ -63,7 +77,7 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 		SenderID:     (msg.ID >> 11) & 0x7FF,
 		ReceiverMask: msg.ID & 0x7FF,
 		OperationID:  operationID,
-		Datapoint:    *datapoint,
+		Datapoint:    datapoint,
 		Data:         data,
 	}, nil
 }

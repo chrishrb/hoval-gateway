@@ -6,6 +6,7 @@ require github.com/stretchr/testify v1.10.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
@@ -15,4 +16,5 @@ require (
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	k8s.io/utils v0.0.0-20250820121507-0af2bda4dd1d
 )

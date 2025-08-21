@@ -6,15 +6,16 @@ import (
 
 	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
+	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/transport"
 )
 
 type SendService struct {
-	store     *hoval.DatapointStore
+	store     store.Engine
 	canSender transport.Sender
 }
 
-func NewSendService(store *hoval.DatapointStore, sender transport.Sender) *SendService {
+func NewSendService(store store.Engine, sender transport.Sender) *SendService {
 	return &SendService{
 		store:     store,
 		canSender: sender,

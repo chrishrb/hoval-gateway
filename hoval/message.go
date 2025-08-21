@@ -15,7 +15,7 @@ type Message struct {
 	// ReceiverMask is a bitmask of receiver IDs that should receive this message
 	ReceiverMask uint32
 	OperationID  Operation
-	Datapoint    Datapoint
+	Datapoint    *Datapoint
 	Data         any
 }
 
@@ -23,7 +23,7 @@ func NewMessage(
 	senderID,
 	receiverMask uint32,
 	operationID Operation,
-	datapoint Datapoint,
+	datapoint *Datapoint,
 	data any,
 ) *Message {
 	return &Message{

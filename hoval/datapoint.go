@@ -35,34 +35,3 @@ func NewDatapoint(
 		DecimalPlaces:  decimalPlaces,
 	}
 }
-
-type DatapointStore struct {
-	datapoints map[string]Datapoint
-}
-
-func NewDatapointStore() *DatapointStore {
-	return &DatapointStore{
-		datapoints: make(map[string]Datapoint),
-	}
-}
-
-func (ds *DatapointStore) Add(name string, dp Datapoint) {
-	ds.datapoints[name] = dp
-}
-
-func (ds *DatapointStore) LookupByName(name string) *Datapoint {
-	result, exists := ds.datapoints[name]
-	if !exists {
-		return nil
-	}
-	return &result
-}
-
-func (ds *DatapointStore) LookupByIdentifier(fg FunctionGroup, fn uint8, dpID uint16) *Datapoint {
-	for _, dp := range ds.datapoints {
-		if dp.FunctionGroup == fg && dp.FunctionNumber == fn && dp.DatapointID == dpID {
-			return &dp
-		}
-	}
-	return nil
-}

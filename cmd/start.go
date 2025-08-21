@@ -1,16 +1,15 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
-	"github.com/chrishrb/hoval-gateway/hoval"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
+	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport/mock"
 	"github.com/spf13/cobra"
+	"k8s.io/utils/clock"
 )
 
 // startCmd represents the start command
@@ -28,7 +27,7 @@ to quickly create a Cobra application.`,
 		consumer := mock.NewConsumer(dummyBus)
 		// sender := mock.NewSender(dummyBus)
 
-		store := hoval.NewDatapointStore()
+		store := inmemory.NewStore(clock.RealClock{})
 		consumeSvc := service.NewConsumeService(store)
 
 		// Get messages from the can bus
@@ -49,6 +48,11 @@ to quickly create a Cobra application.`,
 			if err != nil {
 				slog.Warn("disconnecting from can", "err", err)
 			}
+		}
+
+		// Get all store data
+		for _, d := range store.ListDevices() {
+			fmt.Printf("device: %d, %s\n", d.Address, d.GetName())
 		}
 
 		return err
