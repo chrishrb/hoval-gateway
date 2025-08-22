@@ -47,12 +47,17 @@ var listenCmd = &cobra.Command{
 				return
 			}
 
-			if hovalMsg.DatapointName == nil {
+			if hovalMsg.Datapoint == nil {
 				return
 			}
 
 			device := hoval.NewDevice(hovalMsg.SenderID)
-			slog.Info("received hoval message", "senderID", hovalMsg.SenderID, "senderType", device.GetName(), "datapoint", *hovalMsg.DatapointName, "data", hovalMsg.Data)
+			slog.Info("received hoval message",
+				"senderID", hovalMsg.SenderID,
+				"senderType", device.GetName(),
+				"datapoint", hovalMsg.Datapoint,
+				"data", hovalMsg.Data,
+			)
 		}
 
 		var canConn transport.Connection

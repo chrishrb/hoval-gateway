@@ -20,12 +20,17 @@ func setupProduceSvc() *service.SendService {
 func TestToTransportMessage(t *testing.T) {
 	svc := setupProduceSvc()
 
-	dp := "TestDatapoint"
+	dp := &hoval.Datapoint{
+		FunctionGroup:  50,
+		FunctionNumber: 0,
+		DatapointID:    40650,
+	}
+
 	msg := hoval.NewMessage(
 		1153,
 		1,
 		0x40,
-		&dp,
+		dp,
 		uint8(1),
 	)
 
@@ -41,12 +46,17 @@ func TestToTransportMessage(t *testing.T) {
 func TestToTransportMessageInvalidData(t *testing.T) {
 	svc := setupProduceSvc()
 
-	dp := "TestDatapoint"
+	dp := &hoval.Datapoint{
+		FunctionGroup:  50,
+		FunctionNumber: 0,
+		DatapointID:    40650,
+	}
+
 	msg := hoval.NewMessage(
 		1153,
 		1,
 		0x40,
-		&dp,
+		dp,
 		uint32(12),
 	)
 

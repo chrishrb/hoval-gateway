@@ -42,7 +42,7 @@ func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message)
 
 	s.store.SetDevice(hovalMsg.SenderID, &hoval.Device{Address: hovalMsg.SenderID})
 
-	if hovalMsg.DatapointName == nil {
+	if hovalMsg.Datapoint == nil {
 		return
 	}
 
@@ -99,13 +99,15 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 		return nil, fmt.Errorf("failed to unmarshal data: %w", err)
 	}
 
-	dpName := datapoint.DatapointName
-
 	return &hoval.Message{
-		SenderID:      (msg.ID >> 11) & 0x7FF,
-		ReceiverMask:  msg.ID & 0x7FF,
-		OperationID:   operationID,
-		DatapointName: &dpName,
-		Data:          data,
+		SenderID:     (msg.ID >> 11) & 0x7FF,
+		ReceiverMask: msg.ID & 0x7FF,
+		OperationID:  operationID,
+		Datapoint: &hoval.Datapoint{
+			FunctionGroup:  fnGroup,
+			FunctionNumber: fnNumber,
+			DatapointID:    datapointID,
+		},
+		Data: data,
 	}, nil
 }

@@ -15,7 +15,7 @@ type DatapointProvider interface {
 
 // Datapoint represents the configuration for a single datapoint in the CSV
 type Datapoint struct {
-	ModbusID          uint16 `csv:"ModbusId"`
+	RegisterAddress   uint16 `csv:"Register Address"`
 	UnitName          string `csv:"UnitName"`
 	UnitID            string `csv:"UnitId"`
 	FunctionGroup     uint8  `csv:"FunctionGroup"`

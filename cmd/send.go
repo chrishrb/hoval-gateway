@@ -35,8 +35,11 @@ var sendCmd = &cobra.Command{
 		senderID, _ := cmd.Flags().GetUint32("sender")
 		receiverMask, _ := cmd.Flags().GetUint32("receiver")
 		operationStr, _ := cmd.Flags().GetString("operation")
-		datapointName, _ := cmd.Flags().GetString("datapoint")
 		data, _ := cmd.Flags().GetFloat64("data")
+
+		functionGroup, _ := cmd.Flags().GetUint8("function-group")
+		functionNumber, _ := cmd.Flags().GetUint8("function-number")
+		datapointID, _ := cmd.Flags().GetUint16("datapoint-id")
 
 		// Parse operation
 		var operation hoval.Operation
@@ -57,18 +60,21 @@ var sendCmd = &cobra.Command{
 		}
 
 		// Handle datapoint name (can be nil)
-		if datapointName == "" {
-			return fmt.Errorf("datapoint name must be specified")
+		if functionGroup == 0 && functionNumber == 0 && datapointID == 0 {
+			return fmt.Errorf("datapoint must be specified")
 		}
-		dpName := &datapointName
 
 		// Build message
 		msg := &hoval.Message{
-			SenderID:      senderID,
-			ReceiverMask:  receiverMask,
-			OperationID:   operation,
-			DatapointName: dpName,
-			Data:          data,
+			SenderID:     senderID,
+			ReceiverMask: receiverMask,
+			OperationID:  operation,
+			Datapoint: &hoval.Datapoint{
+				FunctionGroup:  functionGroup,
+				FunctionNumber: functionNumber,
+				DatapointID:    datapointID,
+			},
+			Data: data,
 		}
 
 		var sender transport.Sender
@@ -114,6 +120,9 @@ func init() {
 	sendCmd.Flags().Uint32("sender", 1153, "Sender ID for the message")
 	sendCmd.Flags().Uint32("receiver", 0, "Receiver for the message (2047 to broadcast)")
 	sendCmd.Flags().StringP("operation", "o", "get", "Operation type (response, get, set, or numeric value)")
-	sendCmd.Flags().String("datapoint", "", "Datapoint name")
 	sendCmd.Flags().Float64("data", 0, "Data to send")
+
+	sendCmd.Flags().Uint8("function-group", 0, "Function group")
+	sendCmd.Flags().Uint8("function-number", 0, "Function number")
+	sendCmd.Flags().Uint16("datapoint-id", 0, "Datapoint ID")
 }

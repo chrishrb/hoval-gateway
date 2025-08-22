@@ -33,7 +33,9 @@ func TestFromTransportMessage(t *testing.T) {
 	assert.Equal(t, uint32(1153), msg.SenderID)
 	assert.Equal(t, uint32(1), msg.ReceiverMask)
 	assert.Equal(t, hoval.Operation(0x42), msg.OperationID)
-	assert.Equal(t, "TestDatapoint", *msg.DatapointName)
+	assert.Equal(t, uint8(50), msg.Datapoint.FunctionGroup)
+	assert.Equal(t, uint8(0), msg.Datapoint.FunctionNumber)
+	assert.Equal(t, uint16(40650), msg.Datapoint.DatapointID)
 	assert.Equal(t, uint8(1), msg.Data)
 }
 

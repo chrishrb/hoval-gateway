@@ -37,7 +37,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 
 		// Verify specific datapoint values
 		dp1 := maps.ByFunction["22:0:14"]
-		assert.Equal(t, uint16(1), dp1.ModbusID)
+		assert.Equal(t, uint16(1), dp1.RegisterAddress)
 		assert.Equal(t, "SOL", dp1.UnitName)
 		assert.Equal(t, "65", dp1.UnitID)
 		assert.Equal(t, uint8(22), dp1.FunctionGroup)
@@ -73,7 +73,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 	t.Run("empty CSV file", func(t *testing.T) {
 		// Create a temporary empty CSV file
 		testFile := filepath.Join(t.TempDir(), "empty.csv")
-		err := os.WriteFile(testFile, []byte("ModbusId,UnitName,UnitId,FunctionGroup,FunctionNumber,DatapointId,DatapointName,Type,TypeName,Decimal,FunctionGroup name,Function name,Steps,Min. value,Max. value,Writable,unit,Commentary,Text 0,Text 1,Text 2,Text 3,Text 4,Text 5,Text 6,Text 7,Text 8,Text 9,Text 10,Text 11,Text 12,Text 13,Text 14,Text 15,Text 16,Text 17,Text 18,Text 19,Text 20,Text 21,Text 22,Text 23,Text 24,Text 25,Text 26,Text 27,Text 28,Text 29,Text 30,Text 31\n"), 0644)
+		err := os.WriteFile(testFile, []byte("Register Address,UnitName,UnitId,FunctionGroup,FunctionNumber,DatapointId,DatapointName,Type,TypeName,Decimal,FunctionGroup name,Function name,Steps,Min. value,Max. value,Writable,unit,Commentary,Text 0,Text 1,Text 2,Text 3,Text 4,Text 5,Text 6,Text 7,Text 8,Text 9,Text 10,Text 11,Text 12,Text 13,Text 14,Text 15,Text 16,Text 17,Text 18,Text 19,Text 20,Text 21,Text 22,Text 23,Text 24,Text 25,Text 26,Text 27,Text 28,Text 29,Text 30,Text 31\n"), 0644)
 		require.NoError(t, err)
 
 		maps, err := NewCsvDatapointProvider(testFile)
@@ -142,7 +142,7 @@ func TestDatapointConfigStruct(t *testing.T) {
 		dp := maps.ByFunction["22:0:14"]
 
 		// Test all fields are properly mapped
-		assert.Equal(t, uint16(1), dp.ModbusID)
+		assert.Equal(t, uint16(1), dp.RegisterAddress)
 		assert.Equal(t, "SOL", dp.UnitName)
 		assert.Equal(t, "65", dp.UnitID)
 		assert.Equal(t, uint8(22), dp.FunctionGroup)
@@ -159,24 +159,12 @@ func TestDatapointConfigStruct(t *testing.T) {
 
 // createTestCSVFile creates a temporary CSV file with test data
 func createTestCSVFile(t *testing.T) string {
-	content := `ModbusId,UnitName,UnitId,FunctionGroup,FunctionNumber,DatapointId,DatapointName,Type,TypeName,Decimal,FunctionGroup name,Function name,Steps,Min. value,Max. value,Writable,unit,Commentary,Text 0,Text 1,Text 2,Text 3,Text 4,Text 5,Text 6,Text 7,Text 8,Text 9,Text 10,Text 11,Text 12,Text 13,Text 14,Text 15,Text 16,Text 17,Text 18,Text 19,Text 20,Text 21,Text 22,Text 23,Text 24,Text 25,Text 26,Text 27,Text 28,Text 29,Text 30
+	content := `Register Address,UnitName,UnitId,FunctionGroup,FunctionNumber,DatapointId,DatapointName,Type,TypeName,Decimal,FunctionGroup name,Function name,Steps,Min. value,Max. value,Writable,unit,Commentary,Text 0,Text 1,Text 2,Text 3,Text 4,Text 5,Text 6,Text 7,Text 8,Text 9,Text 10,Text 11,Text 12,Text 13,Text 14,Text 15,Text 16,Text 17,Text 18,Text 19,Text 20,Text 21,Text 22,Text 23,Text 24,Text 25,Text 26,Text 27,Text 28,Text 29,Text 30
 1,SOL,65,22,0,14,TKO1 Kollektor Temperatur,1,S16,1,Kollektor,Kollektor 1,1,-300,3000,No,°C,TKO1 Kollektor Temperatur,text0,text1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 2,SOL,65,22,1,14,TKO2 Kollektor Temperatur,1,S16,1,Kollektor,Kollektor 2,1,-300,3000,No,°C,TKO2 Kollektor Temperatur,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 3,SOL,65,22,1,2034,Gesamtertrag Kollektor,2,S32,0,Kollektor,Kollektor 2,1,0,0,No,kWh,Gesamtertrag Kollektor,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 4,TEST,66,23,2,15,Test Datapoint,3,U16,2,Test Group,Test Function,5,10,100,Yes,V,Test Commentary,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`
 	testFile := filepath.Join(t.TempDir(), "test_datapoints.csv")
-	err := os.WriteFile(testFile, []byte(content), 0644)
-	require.NoError(t, err)
-	return testFile
-}
-
-// createDuplicateTestCSVFile creates a CSV file with duplicate entries for testing
-func createDuplicateTestCSVFile(t *testing.T) string {
-	content := `ModbusId,UnitName,UnitId,FunctionGroup,FunctionNumber,DatapointId,DatapointName,Type,TypeName,Decimal,FunctionGroup name,Function name,Steps,Min. value,Max. value,Writable,unit,Commentary,Text 0,Text 1,Text 2,Text 3,Text 4,Text 5,Text 6,Text 7,Text 8,Text 9,Text 10,Text 11,Text 12,Text 13,Text 14,Text 15,Text 16,Text 17,Text 18,Text 19,Text 20,Text 21,Text 22,Text 23,Text 24,Text 25,Text 26,Text 27,Text 28,Text 29,Text 30
-1,SOL,65,22,0,14,TKO1 Kollektor Temperatur,1,S16,1,Kollektor,Kollektor 1,1,-300,3000,No,°C,Original Comment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1,SOL,65,22,0,14,TKO1 Kollektor Temperatur,1,S16,1,Kollektor,Kollektor 1,1,-300,3000,No,°C,Updated Comment,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`
-
-	testFile := filepath.Join(t.TempDir(), "test_duplicate_datapoints.csv")
 	err := os.WriteFile(testFile, []byte(content), 0644)
 	require.NoError(t, err)
 	return testFile

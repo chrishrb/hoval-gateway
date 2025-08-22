@@ -35,13 +35,13 @@ func (s *SendService) Send(ctx context.Context, message *hoval.Message) error {
 
 func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message, error) {
 	// Get datapoint from provider
-	if msg.DatapointName == nil {
+	if msg.Datapoint == nil {
 		return nil, fmt.Errorf("datapoint name is required")
 	}
 
-	datapoint := s.dpProvider.GetByName(*msg.DatapointName)
+	datapoint := s.dpProvider.GetByFunction(msg.Datapoint.FunctionGroup, msg.Datapoint.FunctionNumber, msg.Datapoint.DatapointID)
 	if datapoint == nil {
-		return nil, fmt.Errorf("datapoint not found: %s", *msg.DatapointName)
+		return nil, fmt.Errorf("datapoint not found: %v", *msg.Datapoint)
 	}
 
 	data := new([8]byte)
