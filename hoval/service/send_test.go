@@ -34,7 +34,7 @@ func TestToTransportMessage(t *testing.T) {
 	require.NotNil(t, tMsg)
 
 	assert.Equal(t, uint32(0x1fe40801), tMsg.ID)
-	assert.Equal(t, uint8(8), tMsg.Length)
+	assert.Equal(t, uint8(7), tMsg.Length)
 	assert.Equal(t, transport.Data{0x1, 0x40, 0x32, 0x0, 0x9e, 0xca, 0x1, 0x0}, tMsg.Data)
 }
 

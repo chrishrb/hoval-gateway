@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/chrishrb/hoval-gateway/transport"
 )
@@ -58,6 +59,10 @@ func (c *Consumer) ReadFromFile(ctx context.Context, fileName string) error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
+
+	// Add a small delay to ensure all messages are processed by the consumer goroutine
+	// before this method returns and the bus potentially gets closed
+	time.Sleep(10 * time.Millisecond)
 
 	return nil
 }

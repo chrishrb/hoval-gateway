@@ -70,11 +70,9 @@ var listenCmd = &cobra.Command{
 			}
 
 			// Add some data
-			if mockFile != "" {
-				err = consumer.ReadFromFile(context.Background(), mockFile)
-				if err != nil {
-					errCh <- err
-				}
+			err = consumer.ReadFromFile(context.Background(), mockFile)
+			if err != nil {
+				errCh <- err
 			}
 		} else {
 			if canInterface == "" {

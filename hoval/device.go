@@ -31,6 +31,8 @@ func (d *Device) GetName() string {
 		return "BM"
 	} else if d.Address >= 1153 && d.Address <= 1160 {
 		return "GW"
+	} else if d.Address == 2047 {
+		return "Broadcast"
 	} else {
 		return "Unknown"
 	}

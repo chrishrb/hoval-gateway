@@ -25,7 +25,12 @@ func NewSendService(store store.Engine, dpProvider config.DatapointProvider, sen
 	}
 }
 
-func (s *SendService) Handle(ctx context.Context, message *transport.Message) {
+func (s *SendService) Send(ctx context.Context, message *hoval.Message) error {
+	transportMsg, err := s.ToTransportMessage(message)
+	if err != nil {
+		return fmt.Errorf("failed to convert message to transport format: %w", err)
+	}
+	return s.canSender.Send(ctx, transportMsg)
 }
 
 func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message, error) {
@@ -54,6 +59,7 @@ func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal data: %w", err)
 	}
+
 	// TODO: data max 2 bytes (16 bit)
 	if len(d) >= 1 {
 		data[6] = d[0]
@@ -71,7 +77,7 @@ func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message
 	data[0] = 1
 
 	// Set the frameLen of the data frame
-	frameLen := uint8(len(data))
+	frameLen := uint8(6 + len(d))
 
 	return &transport.Message{
 		ID:     (0x7F << 22) | (msg.SenderID << 11) | msg.ReceiverMask,
