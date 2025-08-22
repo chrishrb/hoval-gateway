@@ -36,6 +36,9 @@ func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message)
 		slog.Error("failed to convert transport message to hoval message", "error", err)
 		return
 	}
+	if hovalMsg == nil {
+		return
+	}
 
 	s.store.SetDevice(hovalMsg.SenderID, &hoval.Device{Address: hovalMsg.SenderID})
 
@@ -49,13 +52,15 @@ func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message)
 }
 
 func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Message, error) {
-	// TODO: handle data that is more than 2 bytes
-	length := msg.Data[0]
-	if length > 2 {
-		return nil, fmt.Errorf("data length exceeds 2 bytes (%d): %w", length, hoval.ErrInvalidMessageLength)
-	}
+	// Special datapoints have more CAN messages because they are sent in chunks.
+	// U32, S32, S64 need more than 8 bytes, so the first byte indicates how many messages are needed.
+	// noOfMsg := msg.Data[0]
 
 	operationID := hoval.Operation(msg.Data[1])
+	if operationID != hoval.OperationResponse {
+		return nil, nil
+	}
+
 	fnGroup := msg.Data[2]
 	fnNumber := msg.Data[3]
 	datapointID := uint16(msg.Data[4])<<8 | uint16(msg.Data[5])
@@ -71,7 +76,14 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 		}, nil
 	}
 
-	data, err := datatype.FromBytes(datatype.Type(datapoint.TypeName), msg.Data[6:6+length], int(datapoint.Decimal))
+	slog.Debug("datapoint found",
+		"operationID", operationID,
+		"datapointName", datapoint.DatapointName,
+		"datapointType", datapoint.TypeName,
+		"data", fmt.Sprintf("0x%x", msg.Data),
+	)
+
+	data, err := datatype.FromBytes(datatype.Type(datapoint.TypeName), msg.Data[6:msg.Length], int(datapoint.Decimal))
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal data: %w", err)
 	}

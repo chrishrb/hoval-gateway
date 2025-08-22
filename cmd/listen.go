@@ -43,6 +43,9 @@ var listenCmd = &cobra.Command{
 				slog.Error("failed to convert transport message to hoval message", "error", err)
 				return
 			}
+			if hovalMsg == nil {
+				return
+			}
 
 			if hovalMsg.DatapointName == nil {
 				return

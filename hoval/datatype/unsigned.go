@@ -35,23 +35,27 @@ func UnsignedToBytes(t Type, data float64, decimal int) ([]byte, error) {
 }
 
 func UnsignedFromBytes(t Type, data []byte, decimal int) (float64, error) {
+	var val float64
+
 	switch t {
 	case U8:
 		if len(data) != 1 {
 			return 0, ErrInvalidMessageLength
 		}
-		return float64(data[0]) / math.Pow10(decimal), nil
+		val = float64(data[0]) / math.Pow10(decimal)
 	case U16:
 		if len(data) != 2 {
 			return 0, ErrInvalidMessageLength
 		}
-		return float64(binary.BigEndian.Uint16(data)) / math.Pow10(decimal), nil
+		val = float64(binary.BigEndian.Uint16(data)) / math.Pow10(decimal)
 	case U32:
 		if len(data) != 4 {
 			return 0, ErrInvalidMessageLength
 		}
-		return float64(binary.BigEndian.Uint32(data)) / math.Pow10(decimal), nil
+		val = float64(binary.BigEndian.Uint32(data)) / math.Pow10(decimal)
 	default:
 		return 0, ErrInvalidDataType
 	}
+
+	return roundFloat(val, RoundPrecision), nil
 }

@@ -3,20 +3,22 @@ package datatype
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 type Type string
 
 const (
-	U8     Type = "U8"
-	U16    Type = "U16"
-	U32    Type = "U32"
-	S8     Type = "S8"
-	S16    Type = "S16"
-	S32    Type = "S32"
-	List   Type = "List"
-	String Type = "String"
+	U8   Type = "U8"
+	U16  Type = "U16"
+	U32  Type = "U32"
+	S8   Type = "S8"
+	S16  Type = "S16"
+	S32  Type = "S32"
+	List Type = "LIST"
 )
+
+const RoundPrecision = 2 // Default rounding precision for float values
 
 var (
 	ErrInvalidDataType      = errors.New("invalid data type")
@@ -55,15 +57,6 @@ func ToBytes(t Type, data any, decimal int) ([]byte, error) {
 		return ListToBytes(d)
 	}
 
-	// Handle string data
-	if t == String {
-		d, ok := data.(string)
-		if !ok {
-			return nil, errors.New("data must be a string for string type")
-		}
-		return StringToBytes(d)
-	}
-
 	return nil, fmt.Errorf("invalid data type: %v", t)
 }
 
@@ -87,10 +80,10 @@ func FromBytes(t Type, data []byte, decimal int) (any, error) {
 		return ListFromBytes(data)
 	}
 
-	// Handle string data
-	if t == String {
-		return StringFromBytes(data)
-	}
-
 	return nil, fmt.Errorf("invalid data type: %v", t)
+}
+
+func roundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
 }

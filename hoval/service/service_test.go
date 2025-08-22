@@ -9,21 +9,27 @@ func (m DatapointProviderMock) GetByUnit(unit string) []config.Datapoint {
 }
 
 func (m DatapointProviderMock) GetByFunction(fg, fn uint8, dpID uint16) *config.Datapoint {
-	return &config.Datapoint{
-		DatapointName:  "TestDatapoint",
-		FunctionGroup:  50,
-		FunctionNumber: 0,
-		DatapointID:    40650,
-		Type:           "List",
+	if fg == 50 && fn == 0 && dpID == 40650 {
+		return &config.Datapoint{
+			DatapointName:  "TestDatapoint",
+			FunctionGroup:  50,
+			FunctionNumber: 0,
+			DatapointID:    40650,
+			TypeName:       "LIST",
+		}
 	}
+	return nil
 }
 
 func (m DatapointProviderMock) GetByName(name string) *config.Datapoint {
-	return &config.Datapoint{
-		DatapointName:  "TestDatapoint",
-		FunctionGroup:  50,
-		FunctionNumber: 0,
-		DatapointID:    40650,
-		Type:           "List",
+	if name == "TestDatapoint" {
+		return &config.Datapoint{
+			DatapointName:  "TestDatapoint",
+			FunctionGroup:  50,
+			FunctionNumber: 0,
+			DatapointID:    40650,
+			TypeName:       "LIST",
+		}
 	}
+	return nil
 }

@@ -55,5 +55,5 @@ func SignedFromBytes(t Type, data []byte, decimal int) (float64, error) {
 		val = int64(int32(binary.BigEndian.Uint32(data)))
 	}
 
-	return float64(val) * math.Pow10(-decimal), nil
+	return roundFloat(float64(val) * math.Pow10(-decimal), RoundPrecision), nil
 }

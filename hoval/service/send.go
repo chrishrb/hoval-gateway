@@ -65,8 +65,10 @@ func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message
 		return nil, fmt.Errorf("data exceeds maximum length of 2 bytes: %w", hoval.ErrInvalidMessageLength)
 	}
 
-	// Add message len of complete CAN message
-	data[0] = uint8(len(d))
+	// TODO: handle messages with chunks
+	// Special datapoints have more CAN messages because they are sent in chunks.
+	// U32, S32, S64 need more than 8 bytes, so the first byte indicates how many messages are needed.
+	data[0] = 1
 
 	// Set the frameLen of the data frame
 	frameLen := uint8(len(data))

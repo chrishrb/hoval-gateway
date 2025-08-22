@@ -22,8 +22,8 @@ func TestFromTransportMessage(t *testing.T) {
 
 	tMsg := transport.Message{
 		ID:     0x1fe40801,
-		Length: 8,
-		Data:   transport.Data{0x1, 0x40, 0x32, 0x0, 0x9e, 0xca, 0x1, 0x0},
+		Length: 7,
+		Data:   transport.Data{0x1, 0x42, 0x32, 0x0, 0x9e, 0xca, 0x1},
 	}
 	msg, err := svc.FromTransportMessage(tMsg)
 
@@ -32,7 +32,7 @@ func TestFromTransportMessage(t *testing.T) {
 
 	assert.Equal(t, uint32(1153), msg.SenderID)
 	assert.Equal(t, uint32(1), msg.ReceiverMask)
-	assert.Equal(t, hoval.Operation(0x40), msg.OperationID)
+	assert.Equal(t, hoval.Operation(0x42), msg.OperationID)
 	assert.Equal(t, "TestDatapoint", *msg.DatapointName)
 	assert.Equal(t, uint8(1), msg.Data)
 }
@@ -40,11 +40,11 @@ func TestFromTransportMessage(t *testing.T) {
 func TestFromTransportMessageInvalidData(t *testing.T) {
 	svc := setupConsumeSvc()
 
-	// Too long data
+	// Too long for LIST datatype
 	tMsg := transport.Message{
 		ID:     0x1fe40801,
 		Length: 8,
-		Data:   transport.Data{0x3, 0x40, 0x32, 0x0, 0x9e, 0xca, 0x1, 0x0},
+		Data:   transport.Data{0x1, 0x42, 0x32, 0x0, 0x9e, 0xca, 0x0, 0x1},
 	}
 
 	_, err := svc.FromTransportMessage(tMsg)

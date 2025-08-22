@@ -4,7 +4,7 @@ package hoval
 type Operation uint8
 
 const (
-	OperationResponse   Operation = 0x42
-	OperationGetRequest Operation = 0x40
-	OperationSetRequest Operation = 0x46
+	OperationResponse   Operation = 66
+	OperationGetRequest Operation = 64
+	OperationSetRequest Operation = 70
 )
