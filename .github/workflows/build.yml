@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+      options: --cap-add=NET_ADMIN  # <– gives container the right capability
 
     steps:
     - name: Checkout code
@@ -15,12 +18,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y linux-modules-extra-$(uname -r) can-utils iproute2
 
-    - name: Setup virtual CAN
+    - name: Add kernel module vcan
       run: |
         sudo modprobe vcan
-        sudo ip link add dev vcan0 type vcan
-        sudo ip link set up vcan0
-        ip link show vcan0
+        # sudo ip link add dev vcan0 type vcan
+        # sudo ip link set up vcan0
+        # ip link show vcan0
 
     - name: Set up Go
       uses: actions/setup-go@v5
