@@ -13,7 +13,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y can-utils iproute2
+        sudo apt-get install -y linux-modules-extra-$(uname -r) can-utils iproute2
 
     - name: Setup virtual CAN
       run: |
