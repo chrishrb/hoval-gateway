@@ -39,18 +39,20 @@ func TestNewCAN(t *testing.T) {
 
 	// Receive message
 	recv := socketcan.NewReceiver(conn)
-	for recv.Receive() && ctx.Err() == nil {
-		frame := recv.Frame()
-
-		assert.Equal(t, frame.ID, uint32(0x123))
-		assert.Equal(t, frame.Length, uint8(8))
-		assert.Equal(t, frame.Data, go_can.Data{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08})
-
-		break // Stop after receiving the first message
-	}
 	
-	// Check if we timed out
-	if ctx.Err() == context.DeadlineExceeded {
+	// Receive message with context awareness
+	select {
+	case <-ctx.Done():
 		t.Fatal("Test timed out waiting for CAN message")
+	default:
+		if recv.Receive() {
+			frame := recv.Frame()
+			
+			assert.Equal(t, frame.ID, uint32(0x123))
+			assert.Equal(t, frame.Length, uint8(8))
+			assert.Equal(t, frame.Data, go_can.Data{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08})
+		} else {
+			t.Fatal("Failed to receive CAN message")
+		}
 	}
 }
