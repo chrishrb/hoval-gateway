@@ -39,20 +39,25 @@ func TestNewCAN(t *testing.T) {
 
 	// Receive message
 	recv := socketcan.NewReceiver(conn)
+
+	// Channel to receive the frame
+	frameChan := make(chan go_can.Frame, 1)
 	
-	// Receive message with context awareness
+	// Start receiver in goroutine
+	go func() {
+		for recv.Receive() {
+			frameChan <- recv.Frame()
+			return // Only receive one frame for this test
+		}
+	}()
+
+	// Wait for frame or timeout
 	select {
+	case receivedFrame := <-frameChan:
+		assert.Equal(t, receivedFrame.ID, uint32(0x123))
+		assert.Equal(t, receivedFrame.Length, uint8(8))
+		assert.Equal(t, receivedFrame.Data, go_can.Data{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08})
 	case <-ctx.Done():
 		t.Fatal("Test timed out waiting for CAN message")
-	default:
-		if recv.Receive() {
-			frame := recv.Frame()
-			
-			assert.Equal(t, frame.ID, uint32(0x123))
-			assert.Equal(t, frame.Length, uint8(8))
-			assert.Equal(t, frame.Data, go_can.Data{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08})
-		} else {
-			t.Fatal("Failed to receive CAN message")
-		}
 	}
 }
