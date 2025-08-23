@@ -1,4 +1,4 @@
-package config
+package datapoint
 
 import (
 	"fmt"
@@ -13,20 +13,37 @@ type DatapointProvider interface {
 	GetByName(name string) *Datapoint
 }
 
+type HovalBool bool
+
+func (h *HovalBool) UnmarshalCSV(s string) (err error) {
+	switch s {
+	case "N0":
+		fallthrough
+	case "No":
+		*h = false
+		return nil
+	case "Yes":
+		*h = true
+		return nil
+	}
+	return fmt.Errorf("invalid boolean value: %s", s)
+}
+
 // Datapoint represents the configuration for a single datapoint in the CSV
 type Datapoint struct {
-	RegisterAddress   uint16 `csv:"Register Address"`
-	UnitName          string `csv:"UnitName"`
-	UnitID            string `csv:"UnitId"`
-	FunctionGroup     uint8  `csv:"FunctionGroup"`
-	FunctionNumber    uint8  `csv:"FunctionNumber"`
-	DatapointID       uint16 `csv:"DatapointId"`
-	DatapointName     string `csv:"DatapointName"`
-	Type              string `csv:"Type"`
-	TypeName          string `csv:"TypeName"`
-	Decimal           uint8  `csv:"Decimal"`
-	FunctionGroupName string `csv:"FunctionGroup name"`
-	FunctionName      string `csv:"Function name"`
+	RegisterAddress   uint16    `csv:"Register Address"`
+	UnitName          string    `csv:"UnitName"`
+	UnitID            string    `csv:"UnitId"`
+	FunctionGroup     uint8     `csv:"FunctionGroup"`
+	FunctionNumber    uint8     `csv:"FunctionNumber"`
+	DatapointID       uint16    `csv:"DatapointId"`
+	DatapointName     string    `csv:"DatapointName"`
+	Type              string    `csv:"Type"`
+	TypeName          string    `csv:"TypeName"`
+	Decimal           uint8     `csv:"Decimal"`
+	FunctionGroupName string    `csv:"FunctionGroup name"`
+	FunctionName      string    `csv:"Function name"`
+	Writable          HovalBool `csv:"Writable"`
 }
 
 // CsvDatapointProvider holds the different indexed maps for datapoint configuration

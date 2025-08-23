@@ -2,17 +2,13 @@ package hoval
 
 import (
 	"errors"
+
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 )
 
 var (
 	ErrInvalidMessageLength = errors.New("invalid message length")
 )
-
-type Datapoint struct {
-	FunctionGroup  uint8
-	FunctionNumber uint8
-	DatapointID    uint16
-}
 
 // Message represents a Hoval CAN message structure
 type Message struct {
@@ -21,16 +17,16 @@ type Message struct {
 	// ReceiverMask is a bitmask of receiver IDs that should receive this message
 	ReceiverMask uint32
 	OperationID  Operation
-	Datapoint    *Datapoint
-	Data         any
+	Datapoint    *datapoint.Datapoint
+	Data         float64
 }
 
 func NewMessage(
 	senderID,
 	receiverMask uint32,
 	operationID Operation,
-	datapoint *Datapoint,
-	data any,
+	datapoint *datapoint.Datapoint,
+	data float64,
 ) *Message {
 	return &Message{
 		SenderID:     senderID,

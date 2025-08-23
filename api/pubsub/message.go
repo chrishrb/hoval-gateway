@@ -1,5 +1,8 @@
 package pubsub
 
 type Message struct {
-	Data float64
+	FunctionGroup  uint8
+	FunctionNumber uint8
+	DatapointID    uint16
+	Data           float64
 }

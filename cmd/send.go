@@ -6,8 +6,9 @@ import (
 	"log/slog"
 	"strconv"
 
-	"github.com/chrishrb/hoval-gateway/config"
+	"github.com/chrishrb/hoval-gateway/api/pubsub"
 	"github.com/chrishrb/hoval-gateway/hoval"
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
 	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
@@ -65,16 +66,11 @@ var sendCmd = &cobra.Command{
 		}
 
 		// Build message
-		msg := &hoval.Message{
-			SenderID:     senderID,
-			ReceiverMask: receiverMask,
-			OperationID:  operation,
-			Datapoint: &hoval.Datapoint{
-				FunctionGroup:  functionGroup,
-				FunctionNumber: functionNumber,
-				DatapointID:    datapointID,
-			},
-			Data: data,
+		msg := &pubsub.Message{
+			FunctionGroup:  functionGroup,
+			FunctionNumber: functionNumber,
+			DatapointID:    datapointID,
+			Data:           data,
 		}
 
 		var sender transport.Sender
@@ -92,19 +88,16 @@ var sendCmd = &cobra.Command{
 			)
 		}
 
-		dpProvider, err := config.NewCsvDatapointProvider("config/datapoints.csv")
+		dpProvider, err := datapoint.NewCsvDatapointProvider("config/datapoints.csv")
 		if err != nil {
 			return err
 		}
 
 		store := inmemory.NewStore(clock.RealClock{})
-		svc := service.NewSendService(store, dpProvider, sender)
+		svc := service.NewSendService(senderID, store, dpProvider, sender)
 
 		// Send messages to the can bus
-		err = svc.Send(context.Background(), msg)
-		if err != nil {
-			return err
-		}
+		svc.Send(context.Background(), receiverMask, operation, msg)
 
 		return err
 	},

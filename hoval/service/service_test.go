@@ -1,29 +1,30 @@
 package service_test
 
-import "github.com/chrishrb/hoval-gateway/config"
+import "github.com/chrishrb/hoval-gateway/hoval/datapoint"
 
 type DatapointProviderMock struct{}
 
-func (m DatapointProviderMock) GetByUnit(unit string) []config.Datapoint {
+func (m DatapointProviderMock) GetByUnit(unit string) []datapoint.Datapoint {
 	return nil
 }
 
-func (m DatapointProviderMock) GetByFunction(fg, fn uint8, dpID uint16) *config.Datapoint {
+func (m DatapointProviderMock) GetByFunction(fg, fn uint8, dpID uint16) *datapoint.Datapoint {
 	if fg == 50 && fn == 0 && dpID == 40650 {
-		return &config.Datapoint{
+		return &datapoint.Datapoint{
 			DatapointName:  "TestDatapoint",
 			FunctionGroup:  50,
 			FunctionNumber: 0,
 			DatapointID:    40650,
 			TypeName:       "LIST",
+			Writable:       true,
 		}
 	}
 	return nil
 }
 
-func (m DatapointProviderMock) GetByName(name string) *config.Datapoint {
+func (m DatapointProviderMock) GetByName(name string) *datapoint.Datapoint {
 	if name == "TestDatapoint" {
-		return &config.Datapoint{
+		return &datapoint.Datapoint{
 			DatapointName:  "TestDatapoint",
 			FunctionGroup:  50,
 			FunctionNumber: 0,

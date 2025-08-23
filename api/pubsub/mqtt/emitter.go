@@ -19,7 +19,7 @@ type Emitter struct {
 	conn *autopaho.ConnectionManager
 }
 
-func NewEmitter(opts ...Opt[Emitter]) pubsub.Emitter {
+func NewEmitter(opts ...Opt[Emitter]) *Emitter {
 	e := new(Emitter)
 	for _, opt := range opts {
 		opt(e)
@@ -28,11 +28,11 @@ func NewEmitter(opts ...Opt[Emitter]) pubsub.Emitter {
 	return e
 }
 
-func (e *Emitter) Emit(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *pubsub.Message) error {
-	topic := fmt.Sprintf("%s/out/%d/%d/%d", e.mqttPrefix, functionGroup, functionNumber, datapointID)
+func (e *Emitter) Emit(ctx context.Context, receiverMask uint32, message *pubsub.Message) error {
+	topic := fmt.Sprintf("%s/out/%d", e.mqttPrefix, receiverMask)
 	payload, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf("marshalling response of datapoint %d/%d/%d: %v", functionGroup, functionNumber, datapointID, err)
+		return fmt.Errorf("marshalling response of receiver %d: %v", receiverMask, err)
 	}
 
 	err = e.ensureConnection(ctx)

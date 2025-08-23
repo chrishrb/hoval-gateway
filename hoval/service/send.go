@@ -3,34 +3,76 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	"github.com/chrishrb/hoval-gateway/config"
+	"github.com/chrishrb/hoval-gateway/api/pubsub"
 	"github.com/chrishrb/hoval-gateway/hoval"
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
 	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/transport"
 )
 
 type SendService struct {
-	store      store.Engine
-	dpProvider config.DatapointProvider
-	canSender  transport.Sender
+	senderID        uint32
+	store           store.Engine
+	dpProvider      datapoint.DatapointProvider
+	transportSender transport.Sender
 }
 
-func NewSendService(store store.Engine, dpProvider config.DatapointProvider, sender transport.Sender) *SendService {
+func NewSendService(
+	senderID uint32,
+	store store.Engine,
+	dpProvider datapoint.DatapointProvider,
+	transportSender transport.Sender,
+) *SendService {
 	return &SendService{
-		store:      store,
-		dpProvider: dpProvider,
-		canSender:  sender,
+		senderID:        senderID,
+		store:           store,
+		dpProvider:      dpProvider,
+		transportSender: transportSender,
 	}
 }
 
-func (s *SendService) Send(ctx context.Context, message *hoval.Message) error {
-	transportMsg, err := s.ToTransportMessage(message)
+func (s *SendService) Handle(ctx context.Context, receiverMask uint32, msg *pubsub.Message) {
+	// We assume that we only want to SET requests via pubsub API
+	operation := hoval.OperationSetRequest
+
+	err := s.Send(ctx, receiverMask, operation, msg)
 	if err != nil {
-		return fmt.Errorf("failed to convert message to transport format: %w", err)
+		slog.Error("error handling pubsub send", "error", err)
 	}
-	return s.canSender.Send(ctx, transportMsg)
+}
+
+func (s *SendService) Send(ctx context.Context, receiverMask uint32, operationID hoval.Operation, msg *pubsub.Message) error {
+	datapoint := s.dpProvider.GetByFunction(msg.FunctionGroup, msg.FunctionNumber, msg.DatapointID)
+	if datapoint == nil {
+		return fmt.Errorf("datapoint not found: %d/%d/%d", msg.FunctionGroup, msg.FunctionNumber, msg.DatapointID)
+	}
+
+	if operationID == hoval.OperationSetRequest && !datapoint.Writable {
+		return fmt.Errorf("datapoint is not writable: %d/%d/%d", msg.FunctionGroup, msg.FunctionNumber, msg.DatapointID)
+	}
+
+	hovalMsg := &hoval.Message{
+		SenderID:     s.senderID,
+		ReceiverMask: receiverMask,
+		OperationID:  operationID,
+		Datapoint:    datapoint,
+		Data:         msg.Data,
+	}
+
+	transportMsg, err := s.ToTransportMessage(hovalMsg)
+	if err != nil {
+		return fmt.Errorf("failed to convert message to transport format: %v", err)
+	}
+
+	err = s.transportSender.Send(ctx, transportMsg)
+	if err != nil {
+		return fmt.Errorf("failed to send message: %v", err)
+	}
+
+	return nil
 }
 
 func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message, error) {
@@ -39,10 +81,7 @@ func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message
 		return nil, fmt.Errorf("datapoint name is required")
 	}
 
-	datapoint := s.dpProvider.GetByFunction(msg.Datapoint.FunctionGroup, msg.Datapoint.FunctionNumber, msg.Datapoint.DatapointID)
-	if datapoint == nil {
-		return nil, fmt.Errorf("datapoint not found: %v", *msg.Datapoint)
-	}
+	dp := msg.Datapoint
 
 	data := new([8]byte)
 
@@ -50,12 +89,12 @@ func (s *SendService) ToTransportMessage(msg *hoval.Message) (*transport.Message
 	data[1] = byte(msg.OperationID)
 
 	// Add Datapoint information
-	data[2] = byte(datapoint.FunctionGroup)
-	data[3] = byte(datapoint.FunctionNumber)
-	data[4], data[5] = byte(datapoint.DatapointID>>8), byte(datapoint.DatapointID)
+	data[2] = byte(dp.FunctionGroup)
+	data[3] = byte(dp.FunctionNumber)
+	data[4], data[5] = byte(dp.DatapointID>>8), byte(dp.DatapointID)
 
 	// Add data
-	d, err := datatype.ToBytes(datatype.Type(datapoint.TypeName), msg.Data, int(datapoint.Decimal))
+	d, err := datatype.ToBytes(datatype.Type(dp.TypeName), msg.Data, int(dp.Decimal))
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal data: %w", err)
 	}

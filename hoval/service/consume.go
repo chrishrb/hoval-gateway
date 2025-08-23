@@ -5,20 +5,21 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/chrishrb/hoval-gateway/config"
+	"github.com/chrishrb/hoval-gateway/api/pubsub"
 	"github.com/chrishrb/hoval-gateway/hoval"
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 	"github.com/chrishrb/hoval-gateway/hoval/datatype"
 	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/transport"
 )
 
 type ConsumeService struct {
-	store      store.Engine
-	dpProvider config.DatapointProvider
-	// mqttSender  *api.Emiter
+	store         store.Engine
+	dpProvider    datapoint.DatapointProvider
+	pubsubEmitter pubsub.Emitter
 }
 
-func NewConsumeService(store store.Engine, dpProvider config.DatapointProvider) *ConsumeService {
+func NewConsumeService(store store.Engine, dpProvider datapoint.DatapointProvider) *ConsumeService {
 	return &ConsumeService{
 		store:      store,
 		dpProvider: dpProvider,
@@ -48,7 +49,15 @@ func (s *ConsumeService) Handle(ctx context.Context, message *transport.Message)
 
 	slog.Debug("received hoval message", "message", hovalMsg)
 
-	// TODO: handle the hoval message, e.g., publish to MQTT or process further
+	err = s.pubsubEmitter.Emit(ctx, hovalMsg.ReceiverMask, &pubsub.Message{
+		FunctionGroup:  hovalMsg.Datapoint.FunctionGroup,
+		FunctionNumber: hovalMsg.Datapoint.FunctionNumber,
+		DatapointID:    hovalMsg.Datapoint.DatapointID,
+		Data:           hovalMsg.Data,
+	})
+	if err != nil {
+		slog.Error("failed to emit message to pubsub api", "error", err)
+	}
 }
 
 func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Message, error) {
@@ -70,8 +79,8 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 	fnNumber := msg.Data[3]
 	datapointID := uint16(msg.Data[4])<<8 | uint16(msg.Data[5])
 
-	datapoint := s.dpProvider.GetByFunction(fnGroup, fnNumber, datapointID)
-	if datapoint == nil {
+	dp := s.dpProvider.GetByFunction(fnGroup, fnNumber, datapointID)
+	if dp == nil {
 		slog.Error("unknown datapoint",
 			"operationID", operationID,
 			"functionGroup", fnGroup,
@@ -89,12 +98,12 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 
 	slog.Info("datapoint found",
 		"operationID", operationID,
-		"datapointName", datapoint.DatapointName,
-		"datapointType", datapoint.TypeName,
+		"datapointName", dp.DatapointName,
+		"datapointType", dp.TypeName,
 		"data", fmt.Sprintf("0x%x", msg.Data[6:msg.Length]),
 	)
 
-	data, err := datatype.FromBytes(datatype.Type(datapoint.TypeName), msg.Data[6:msg.Length], int(datapoint.Decimal))
+	data, err := datatype.FromBytes(datatype.Type(dp.TypeName), msg.Data[6:msg.Length], int(dp.Decimal))
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal data: %w", err)
 	}
@@ -103,7 +112,7 @@ func (s *ConsumeService) FromTransportMessage(msg transport.Message) (*hoval.Mes
 		SenderID:     (msg.ID >> 11) & 0x7FF,
 		ReceiverMask: msg.ID & 0x7FF,
 		OperationID:  operationID,
-		Datapoint: &hoval.Datapoint{
+		Datapoint: &datapoint.Datapoint{
 			FunctionGroup:  fnGroup,
 			FunctionNumber: fnNumber,
 			DatapointID:    datapointID,

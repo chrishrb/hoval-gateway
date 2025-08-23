@@ -29,10 +29,11 @@ func TestListenerProcessesMessagesReceivedFromTheBroker(t *testing.T) {
 
 	// setup the handler
 	receivedMsgCh := make(chan struct{})
-	handler := func(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, msg *pubsub.Message) {
-		assert.Equal(t, uint8(1), functionGroup)
-		assert.Equal(t, uint8(2), functionNumber)
-		assert.Equal(t, uint16(3), datapointID)
+	handler := func(ctx context.Context, receiverMask uint32, msg *pubsub.Message) {
+		assert.Equal(t, uint32(3), receiverMask)
+		assert.Equal(t, uint8(50), msg.FunctionGroup)
+		assert.Equal(t, uint8(2), msg.FunctionNumber)
+		assert.Equal(t, uint16(123), msg.DatapointID)
 		assert.Equal(t, 123.23, msg.Data)
 		receivedMsgCh <- struct{}{}
 	}
@@ -50,7 +51,10 @@ func TestListenerProcessesMessagesReceivedFromTheBroker(t *testing.T) {
 
 	// publish message
 	publishMessage(t, broker, pubsub.Message{
-		Data: 123.23,
+		FunctionGroup:  50,
+		FunctionNumber: 2,
+		DatapointID:    123,
+		Data:           123.23,
 	})
 
 	// wait for message to be received / timeout
@@ -73,7 +77,7 @@ func publishMessage(t *testing.T, broker *server.Server, msg pubsub.Message) {
 			Qos:    0,
 			Retain: false,
 		},
-		TopicName: "hoval/in/1/2/3",
+		TopicName: "hoval/in/3",
 		Payload:   msgBytes,
 		PacketID:  uint16(0),
 	})

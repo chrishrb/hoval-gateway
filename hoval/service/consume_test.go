@@ -36,7 +36,7 @@ func TestFromTransportMessage(t *testing.T) {
 	assert.Equal(t, uint8(50), msg.Datapoint.FunctionGroup)
 	assert.Equal(t, uint8(0), msg.Datapoint.FunctionNumber)
 	assert.Equal(t, uint16(40650), msg.Datapoint.DatapointID)
-	assert.Equal(t, uint8(1), msg.Data)
+	assert.Equal(t, float64(1), msg.Data)
 }
 
 func TestFromTransportMessageInvalidData(t *testing.T) {

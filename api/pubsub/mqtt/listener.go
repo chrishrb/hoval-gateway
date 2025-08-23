@@ -66,7 +66,7 @@ func (l *Listener) Connect(ctx context.Context, handler transport.MessageHandler
 
 	readyCh := make(chan struct{})
 
-	topic := fmt.Sprintf("%s/in/#", l.mqttPrefix)
+	topic := fmt.Sprintf("%s/in/+", l.mqttPrefix)
 
 	conn := new(connection)
 	mqttRouter := paho.NewStandardRouter()
@@ -89,19 +89,9 @@ func (l *Listener) Connect(ctx context.Context, handler transport.MessageHandler
 				// determine functionGroup, functionNumber, datapointID
 				topicParts := strings.Split(mqttMsg.Topic, "/")
 
-				functionGroup, err := stringToUint8((topicParts[len(topicParts)-3]))
+				receiverMask, err := stringToUint32(topicParts[len(topicParts)-1])
 				if err != nil {
-					slog.Error("unable to convert function group to uint8", "err", err)
-					return
-				}
-				functionNumber, err := stringToUint8(topicParts[len(topicParts)-2])
-				if err != nil {
-					slog.Error("unable to convert function number to uint8", "err", err)
-					return
-				}
-				datapointID, err := stringToUint16(topicParts[len(topicParts)-1])
-				if err != nil {
-					slog.Error("unable to convert datapointID to uint16", "err", err)
+					slog.Error("unable to convert receiverMask to uint32", "err", err)
 					return
 				}
 
@@ -114,7 +104,7 @@ func (l *Listener) Connect(ctx context.Context, handler transport.MessageHandler
 				}
 
 				// execute the handler
-				handler.Handle(ctx, functionGroup, functionNumber, datapointID, &msg)
+				handler.Handle(ctx, receiverMask, &msg)
 			})
 			readyCh <- struct{}{}
 		},
@@ -161,24 +151,13 @@ func randSeq(n int) string {
 	return string(b)
 }
 
-func stringToUint8(in string) (uint8, error) {
+func stringToUint32(in string) (uint32, error) {
 	if in == "" {
 		return 0, nil
 	}
-	i, err := strconv.ParseUint(in, 0, 8)
+	i, err := strconv.ParseUint(in, 0, 32)
 	if err != nil {
 		return 0, err
 	}
-	return uint8(i), nil
-}
-
-func stringToUint16(in string) (uint16, error) {
-	if in == "" {
-		return 0, nil
-	}
-	i, err := strconv.ParseUint(in, 0, 16)
-	if err != nil {
-		return 0, err
-	}
-	return uint16(i), nil
+	return uint32(i), nil
 }

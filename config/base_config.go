@@ -13,6 +13,7 @@ type BaseConfig struct {
 	Api       ApiSettingsConfig `mapstructure:"api" json:"api" validate:"required"`
 	Transport TransportConfig   `mapstructure:"transport" json:"transport" validate:"required"`
 	Storage   StorageConfig     `mapstructure:"storage" json:"storage" validate:"required"`
+	Hoval     HovalConfig       `mapstructure:"hoval" json:"hoval" validate:"required"`
 }
 
 // DefaultConfig provides the default configuration. The configuration
@@ -30,6 +31,9 @@ var DefaultConfig = BaseConfig{
 	},
 	Storage: StorageConfig{
 		Type: "in_memory",
+	},
+	Hoval: HovalConfig{
+		SenderID: 1153, // Default for Hoval GW
 	},
 }
 

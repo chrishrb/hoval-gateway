@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/chrishrb/hoval-gateway/config"
 	"github.com/chrishrb/hoval-gateway/hoval"
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
 	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
@@ -24,7 +24,7 @@ var listenCmd = &cobra.Command{
 		canInterface, _ := cmd.Flags().GetString("interface")
 		mockFile, _ := cmd.Flags().GetString("mock-file")
 
-		dpProvider, err := config.NewCsvDatapointProvider("config/datapoints.csv")
+		dpProvider, err := datapoint.NewCsvDatapointProvider("config/datapoints.csv")
 		if err != nil {
 			return err
 		}

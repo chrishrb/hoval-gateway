@@ -25,44 +25,28 @@ var (
 	ErrInvalidMessageLength = errors.New("invalid message length")
 )
 
-func ToBytes(t Type, data any, decimal int) ([]byte, error) {
-	if data == nil {
-		return []byte{}, nil
-	}
-
+func ToBytes(t Type, data float64, decimal int) ([]byte, error) {
 	// Handle unsigned data
 	if t == U8 || t == U16 || t == U32 {
-		d, ok := data.(float64)
-		if !ok {
-			return nil, errors.New("data must be a float64 for unsigned types")
-		}
-		return UnsignedToBytes(t, d, decimal)
+		return UnsignedToBytes(t, data, decimal)
 	}
 
 	// Handle signed data
 	if t == S8 || t == S16 || t == S32 {
-		d, ok := data.(float64)
-		if !ok {
-			return nil, errors.New("data must be a float64 for signed types")
-		}
-		return SignedToBytes(t, d, decimal)
+		return SignedToBytes(t, data, decimal)
 	}
 
 	// Handle list data
 	if t == List {
-		d, ok := data.(uint8)
-		if !ok {
-			return nil, errors.New("data must be a uint8 for list type")
-		}
-		return ListToBytes(d)
+		return ListToBytes(uint8(data))
 	}
 
 	return nil, fmt.Errorf("invalid data type: %v", t)
 }
 
-func FromBytes(t Type, data []byte, decimal int) (any, error) {
+func FromBytes(t Type, data []byte, decimal int) (float64, error) {
 	if len(data) == 0 {
-		return nil, nil
+		return 0, nil
 	}
 
 	// Handle unsigned data
@@ -77,10 +61,11 @@ func FromBytes(t Type, data []byte, decimal int) (any, error) {
 
 	// Handle list data
 	if t == List {
-		return ListFromBytes(data)
+		d, err := ListFromBytes(data)
+		return float64(d), err
 	}
 
-	return nil, fmt.Errorf("invalid data type: %v", t)
+	return 0, fmt.Errorf("invalid data type: %v", t)
 }
 
 func roundFloat(val float64, precision uint) float64 {

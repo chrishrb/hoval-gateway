@@ -3,13 +3,13 @@ package pubsub
 import "context"
 
 type MessageHandler interface {
-	Handle(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *Message)
+	Handle(ctx context.Context, receiverMask uint32, message *Message)
 }
 
-type MessageHandlerFunc func(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *Message)
+type MessageHandlerFunc func(ctx context.Context, receiverMask uint32, message *Message)
 
-func (h MessageHandlerFunc) Handle(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *Message) {
-	h(ctx, functionGroup, functionNumber, datapointID, message)
+func (h MessageHandlerFunc) Handle(ctx context.Context, receiverMask uint32, message *Message) {
+	h(ctx, receiverMask, message)
 }
 
 type Listener interface {

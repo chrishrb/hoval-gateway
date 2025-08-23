@@ -1,10 +1,11 @@
-package config
+package datapoint_test
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +16,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 		testCSV := createTestCSVFile(t)
 		defer os.Remove(testCSV)
 
-		maps, err := NewCsvDatapointProvider(testCSV)
+		maps, err := datapoint.NewCsvDatapointProvider(testCSV)
 		require.NoError(t, err)
 		require.NotNil(t, maps)
 
@@ -52,7 +53,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 	})
 
 	t.Run("file not found error", func(t *testing.T) {
-		maps, err := NewCsvDatapointProvider("nonexistent.csv")
+		maps, err := datapoint.NewCsvDatapointProvider("nonexistent.csv")
 		assert.Error(t, err)
 		assert.Nil(t, maps)
 		assert.Contains(t, err.Error(), "failed to open CSV file")
@@ -64,7 +65,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 		err := os.WriteFile(testFile, []byte("invalid,csv\ndata,with,too,many,fields"), 0644)
 		require.NoError(t, err)
 
-		maps, err := NewCsvDatapointProvider(testFile)
+		maps, err := datapoint.NewCsvDatapointProvider(testFile)
 		assert.Error(t, err)
 		assert.Nil(t, maps)
 		assert.Contains(t, err.Error(), "failed to parse CSV file")
@@ -76,7 +77,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 		err := os.WriteFile(testFile, []byte("Register Address,UnitName,UnitId,FunctionGroup,FunctionNumber,DatapointId,DatapointName,Type,TypeName,Decimal,FunctionGroup name,Function name,Steps,Min. value,Max. value,Writable,unit,Commentary,Text 0,Text 1,Text 2,Text 3,Text 4,Text 5,Text 6,Text 7,Text 8,Text 9,Text 10,Text 11,Text 12,Text 13,Text 14,Text 15,Text 16,Text 17,Text 18,Text 19,Text 20,Text 21,Text 22,Text 23,Text 24,Text 25,Text 26,Text 27,Text 28,Text 29,Text 30,Text 31\n"), 0644)
 		require.NoError(t, err)
 
-		maps, err := NewCsvDatapointProvider(testFile)
+		maps, err := datapoint.NewCsvDatapointProvider(testFile)
 		require.NoError(t, err)
 		require.NotNil(t, maps)
 
@@ -91,7 +92,7 @@ func TestDatapointMapsIndexing(t *testing.T) {
 	testCSV := createTestCSVFile(t)
 	defer os.Remove(testCSV)
 
-	maps, err := NewCsvDatapointProvider(testCSV)
+	maps, err := datapoint.NewCsvDatapointProvider(testCSV)
 	require.NoError(t, err)
 
 	t.Run("ByUnitID indexing", func(t *testing.T) {
@@ -136,7 +137,7 @@ func TestDatapointConfigStruct(t *testing.T) {
 		testCSV := createTestCSVFile(t)
 		defer os.Remove(testCSV)
 
-		maps, err := NewCsvDatapointProvider(testCSV)
+		maps, err := datapoint.NewCsvDatapointProvider(testCSV)
 		require.NoError(t, err)
 
 		dp := maps.ByFunction["22:0:14"]

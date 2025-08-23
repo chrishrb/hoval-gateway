@@ -5,12 +5,12 @@ import (
 )
 
 type Emitter interface {
-	Emit(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *Message) error
+	Emit(ctx context.Context, receiverMask uint32, message *Message) error
 }
 
 // EmitterFunc allows a plain function to be used as an Emitter
-type EmitterFunc func(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *Message) error
+type EmitterFunc func(ctx context.Context, receiverMask uint32, message *Message) error
 
-func (e EmitterFunc) Emit(ctx context.Context, functionGroup, functionNumber uint8, datapointID uint16, message *Message) error {
-	return e(ctx, functionGroup, functionNumber, datapointID, message)
+func (e EmitterFunc) Emit(ctx context.Context, receiverMask uint32, message *Message) error {
+	return e(ctx, receiverMask, message)
 }

@@ -24,8 +24,8 @@ func TestConfigure(t *testing.T) {
 	assert.Equal(t, wantApiSettings, settings.HttpApi)
 	assert.NotNil(t, settings.Storage)
 	assert.NotNil(t, settings.DatapointProvider)
-	assert.NotNil(t, settings.CanConsumer)
-	assert.NotNil(t, settings.CanSender)
+	assert.NotNil(t, settings.TransportConsumer)
+	assert.NotNil(t, settings.TransportSender)
 }
 
 func TestConfigureInMemoryStorage(t *testing.T) {

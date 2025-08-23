@@ -3,7 +3,13 @@ package config
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"time"
 
+	"github.com/chrishrb/hoval-gateway/api/pubsub"
+	mqtt2 "github.com/chrishrb/hoval-gateway/api/pubsub/mqtt"
+	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
+	"github.com/chrishrb/hoval-gateway/hoval/service"
 	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
@@ -22,10 +28,12 @@ type HttpApiSettings struct {
 type Config struct {
 	HttpApi           HttpApiSettings
 	Storage           store.Engine
-	DatapointProvider DatapointProvider
-	CanConsumer       transport.Consumer
-	CanSender         transport.Sender
-	// TODO: mqtt
+	DatapointProvider datapoint.DatapointProvider
+	TransportConsumer transport.Consumer
+	TransportSender   transport.Sender
+	PubSubListener    pubsub.Listener
+	PubSubEmitter     pubsub.Emitter
+	HandlerFunc       pubsub.MessageHandler
 }
 
 func Configure(ctx context.Context, cfg *BaseConfig) (c *Config, err error) {
@@ -48,20 +56,34 @@ func Configure(ctx context.Context, cfg *BaseConfig) (c *Config, err error) {
 		return nil, err
 	}
 
-	c.DatapointProvider, err = NewCsvDatapointProvider("datapoints.csv")
+	c.DatapointProvider, err = datapoint.NewCsvDatapointProvider("datapoints.csv")
 	if err != nil {
 		return nil, err
 	}
 
-	c.CanConsumer, err = getCanConsumer(&cfg.Transport)
+	c.TransportConsumer, err = getCanConsumer(&cfg.Transport)
 	if err != nil {
 		return nil, err
 	}
 
-	c.CanSender, err = getCanSender(&cfg.Transport)
+	c.TransportSender, err = getCanSender(&cfg.Transport)
 	if err != nil {
 		return nil, err
 	}
+
+	if cfg.Api.PubSub != nil {
+		c.PubSubListener, err = getMqttReceiver(cfg.Api.PubSub)
+		if err != nil {
+			return nil, err
+		}
+
+		c.PubSubEmitter, err = getOcppMsgEmitter(cfg.Api.PubSub)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	c.HandlerFunc = service.NewSendService(cfg.Hoval.SenderID, c.Storage, c.DatapointProvider, c.TransportSender)
 
 	return c, nil
 }
@@ -100,6 +122,83 @@ func getCanSender(cfg *TransportConfig) (transport.Sender, error) {
 		return can.NewSender(
 			can.WithCANDevice[can.Sender](cfg.CAN.Device),
 		), nil
+	default:
+		return nil, fmt.Errorf("unknown transport type: %s", cfg.Type)
+	}
+}
+
+func getMqttReceiver(cfg *PubSubApiConfig) (pubsub.Listener, error) {
+	switch cfg.Type {
+	case "mqtt":
+		var mqttUrls []*url.URL
+		for _, urlStr := range cfg.Mqtt.Urls {
+			u, err := url.Parse(urlStr)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse mqtt url: %w", err)
+			}
+			mqttUrls = append(mqttUrls, u)
+		}
+
+		mqttConnectTimeout, err := time.ParseDuration(cfg.Mqtt.ConnectTimeout)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse mqtt connect timeout: %w", err)
+		}
+
+		mqttConnectRetryDelay, err := time.ParseDuration(cfg.Mqtt.ConnectRetryDelay)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse mqtt connect retry delay: %w", err)
+		}
+
+		mqttKeepAliveInterval, err := time.ParseDuration(cfg.Mqtt.KeepAliveInterval)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse mqtt keep alive interval: %w", err)
+		}
+
+		opts := []mqtt2.Opt[mqtt2.Listener]{
+			mqtt2.WithMqttBrokerUrls[mqtt2.Listener](mqttUrls),
+			mqtt2.WithMqttPrefix[mqtt2.Listener](cfg.Mqtt.Prefix),
+			mqtt2.WithMqttConnectSettings[mqtt2.Listener](mqttConnectTimeout, mqttConnectRetryDelay, mqttKeepAliveInterval),
+			mqtt2.WithMqttGroup(cfg.Mqtt.Group),
+		}
+
+		return mqtt2.NewListener(opts...), nil
+	default:
+		return nil, fmt.Errorf("unknown transport type: %s", cfg.Type)
+	}
+}
+func getOcppMsgEmitter(cfg *PubSubApiConfig) (pubsub.Emitter, error) {
+	switch cfg.Type {
+	case "mqtt":
+		var mqttUrls []*url.URL
+		for _, urlStr := range cfg.Mqtt.Urls {
+			u, err := url.Parse(urlStr)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse mqtt url: %w", err)
+			}
+			mqttUrls = append(mqttUrls, u)
+		}
+
+		mqttConnectTimeout, err := time.ParseDuration(cfg.Mqtt.ConnectTimeout)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse mqtt connect timeout: %w", err)
+		}
+
+		mqttConnectRetryDelay, err := time.ParseDuration(cfg.Mqtt.ConnectRetryDelay)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse mqtt connect retry delay: %w", err)
+		}
+
+		mqttKeepAliveInterval, err := time.ParseDuration(cfg.Mqtt.KeepAliveInterval)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse mqtt keep alive interval: %w", err)
+		}
+
+		mqttEmitter := mqtt2.NewEmitter(
+			mqtt2.WithMqttBrokerUrls[mqtt2.Emitter](mqttUrls),
+			mqtt2.WithMqttPrefix[mqtt2.Emitter](cfg.Mqtt.Prefix),
+			mqtt2.WithMqttConnectSettings[mqtt2.Emitter](mqttConnectTimeout, mqttConnectRetryDelay, mqttKeepAliveInterval))
+
+		return mqttEmitter, nil
 	default:
 		return nil, fmt.Errorf("unknown transport type: %s", cfg.Type)
 	}
