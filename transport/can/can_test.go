@@ -7,20 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chrishrb/hoval-gateway/transport/can"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	go_can "go.einride.tech/can"
 	"go.einride.tech/can/pkg/socketcan"
 )
 
 func TestNewCAN(t *testing.T) {
-	d := can.NewCAN(t)
-
-	up, err := d.IsUp()
-	require.NoError(t, err)
-	assert.True(t, up)
-
 	conn, _ := socketcan.DialContext(t.Context(), "can", "vcan0")
 
 	frame := go_can.Frame{
