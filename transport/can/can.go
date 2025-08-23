@@ -8,8 +8,9 @@ import (
 )
 
 func NewCAN(t *testing.T) *candevice.Device {
-	d, _ := candevice.New("vcan0")
-	err := d.SetBitrate(250000)
+	d, err := candevice.New("vcan0")
+	require.NoError(t, err)
+	err = d.SetBitrate(250000)
 	require.NoError(t, err)
 
 	err = d.SetUp()
