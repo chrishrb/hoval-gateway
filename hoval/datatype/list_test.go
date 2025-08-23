@@ -18,6 +18,6 @@ func TestListFromBytes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint8(5), data)
 
-	data, err = datatype.ListFromBytes([]byte{0x20, 0x20})
+	_, err = datatype.ListFromBytes([]byte{0x20, 0x20})
 	assert.Error(t, err)
 }

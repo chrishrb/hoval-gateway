@@ -15,6 +15,7 @@ func NewCAN(t *testing.T) *candevice.Device {
 	err = d.SetUp()
 	require.NoError(t, err)
 
+	//nolint:errcheck
 	defer d.SetDown()
 
 	return d

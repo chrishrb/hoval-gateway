@@ -45,6 +45,7 @@ func (c *Consumer) ReadFromFile(ctx context.Context, fileName string) error {
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)

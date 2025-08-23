@@ -74,7 +74,7 @@ var sendCmd = &cobra.Command{
 		}
 
 		var sender transport.Sender
-		if mockMode != false {
+		if mockMode {
 			slog.Info("Send message to STDOUT")
 
 			sender = &mockSender{}
@@ -97,9 +97,7 @@ var sendCmd = &cobra.Command{
 		svc := service.NewSendService(senderID, store, dpProvider, sender)
 
 		// Send messages to the can bus
-		svc.Send(context.Background(), receiverMask, operation, msg)
-
-		return err
+		return svc.Send(context.Background(), receiverMask, operation, msg)
 	},
 }
 

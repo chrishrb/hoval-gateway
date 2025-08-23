@@ -14,6 +14,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 	t.Run("successful load with valid CSV", func(t *testing.T) {
 		// Create a temporary CSV file for testing
 		testCSV := createTestCSVFile(t)
+		//nolint:errcheck
 		defer os.Remove(testCSV)
 
 		maps, err := datapoint.NewCsvDatapointProvider(testCSV)
@@ -90,6 +91,7 @@ func TestLoadDatapointConfigFromCSV(t *testing.T) {
 
 func TestDatapointMapsIndexing(t *testing.T) {
 	testCSV := createTestCSVFile(t)
+	//nolint:errcheck
 	defer os.Remove(testCSV)
 
 	maps, err := datapoint.NewCsvDatapointProvider(testCSV)
@@ -135,6 +137,7 @@ func TestDatapointMapsIndexing(t *testing.T) {
 func TestDatapointConfigStruct(t *testing.T) {
 	t.Run("struct field mapping", func(t *testing.T) {
 		testCSV := createTestCSVFile(t)
+		//nolint:errcheck
 		defer os.Remove(testCSV)
 
 		maps, err := datapoint.NewCsvDatapointProvider(testCSV)

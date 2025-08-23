@@ -16,6 +16,7 @@ func TestSender(t *testing.T) {
 
 	bus := mock.NewMockBus()
 	sender := mock.NewSender(bus)
+	//nolint:errcheck
 	defer bus.Close()
 
 	// Create a message

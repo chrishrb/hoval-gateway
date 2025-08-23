@@ -16,6 +16,7 @@ func getFreePort() (port int, err error) {
 	if a, err = net.ResolveTCPAddr("tcp", "127.0.0.1:0"); err == nil {
 		var l *net.TCPListener
 		if l, err = net.ListenTCP("tcp", a); err == nil {
+			//nolint:errcheck
 			defer l.Close()
 			return l.Addr().(*net.TCPAddr).Port, nil
 		}

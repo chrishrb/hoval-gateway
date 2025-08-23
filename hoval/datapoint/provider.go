@@ -85,6 +85,7 @@ func NewCsvDatapointProvider(filename string) (*CsvDatapointProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
 	}
+	//nolint:errcheck
 	defer file.Close()
 
 	var datapoints []Datapoint
