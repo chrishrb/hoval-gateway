@@ -33,7 +33,8 @@ var DefaultConfig = BaseConfig{
 		Type: "in_memory",
 	},
 	Hoval: HovalConfig{
-		SenderID: 1153, // Default for Hoval GW
+		SenderID:         1153, // Default for Hoval GW
+		PeriodicRunEvery: "1m",
 	},
 }
 

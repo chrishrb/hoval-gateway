@@ -10,6 +10,7 @@ import (
 	mqtt2 "github.com/chrishrb/hoval-gateway/api/pubsub/mqtt"
 	"github.com/chrishrb/hoval-gateway/hoval/datapoint"
 	"github.com/chrishrb/hoval-gateway/hoval/service"
+	"github.com/chrishrb/hoval-gateway/periodic"
 	"github.com/chrishrb/hoval-gateway/store"
 	"github.com/chrishrb/hoval-gateway/store/inmemory"
 	"github.com/chrishrb/hoval-gateway/transport"
@@ -31,9 +32,11 @@ type Config struct {
 	DatapointProvider datapoint.DatapointProvider
 	TransportConsumer transport.Consumer
 	TransportSender   transport.Sender
+	ConsumeHandler    transport.MessageHandler
 	PubSubListener    pubsub.Listener
 	PubSubEmitter     pubsub.Emitter
-	HandlerFunc       pubsub.MessageHandler
+	SendHandler       pubsub.MessageHandler
+	PeriodicRequester *periodic.PeriodicRequester
 }
 
 func Configure(ctx context.Context, cfg *BaseConfig) (c *Config, err error) {
@@ -83,7 +86,13 @@ func Configure(ctx context.Context, cfg *BaseConfig) (c *Config, err error) {
 		}
 	}
 
-	c.HandlerFunc = service.NewSendService(cfg.Hoval.SenderID, c.Storage, c.DatapointProvider, c.TransportSender)
+	sendSvc := service.NewSendService(cfg.Hoval.SenderID, c.Storage, c.DatapointProvider, c.TransportSender)
+	c.SendHandler = sendSvc
+
+	c.PeriodicRequester, err = getPeriodicRequester(sendSvc, &cfg.Hoval)
+	if err != nil {
+		return nil, err
+	}
 
 	return c, nil
 }
@@ -202,4 +211,23 @@ func getOcppMsgEmitter(cfg *PubSubApiConfig) (pubsub.Emitter, error) {
 	default:
 		return nil, fmt.Errorf("unknown transport type: %s", cfg.Type)
 	}
+}
+
+func getPeriodicRequester(svc *service.SendService, cfg *HovalConfig) (*periodic.PeriodicRequester, error) {
+	runEvery, err := time.ParseDuration(cfg.PeriodicRunEvery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse periodic RunEvery: %w", err)
+	}
+
+	requests := make([]periodic.PeriodicRequest, len(cfg.PeriodicRequests))
+	for i, r := range cfg.PeriodicRequests {
+		requests[i] = periodic.PeriodicRequest{
+			ReceiverMask:   r.ReceiverMask,
+			FunctionGroup:  r.FunctionGroup,
+			FunctionNumber: r.FunctionNumber,
+			DatapointID:    r.DatapointID,
+		}
+	}
+
+	return periodic.NewPeriodicRequester(svc, requests, runEvery), nil
 }
