@@ -8,29 +8,17 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	go_can "go.einride.tech/can"
 	"go.einride.tech/can/pkg/socketcan"
 )
 
 func TestNewCAN(t *testing.T) {
-	conn, _ := socketcan.DialContext(t.Context(), "can", "vcan0")
-
-	frame := go_can.Frame{
-		ID:     0x123,
-		Length: 8,
-		Data:   go_can.Data{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08},
-	}
-
-	// Send message
-	tx := socketcan.NewTransmitter(conn)
-	_ = tx.TransmitFrame(t.Context(), frame)
-
-	// Create context with timeout for receiving
-	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
-	defer cancel()
+	recvConn, err := socketcan.DialContext(t.Context(), "can", "vcan0")
+	require.NoError(t, err)
 
 	// Receive message
-	recv := socketcan.NewReceiver(conn)
+	recv := socketcan.NewReceiver(recvConn)
 
 	// Channel to receive the frame
 	frameChan := make(chan go_can.Frame, 1)
@@ -39,11 +27,27 @@ func TestNewCAN(t *testing.T) {
 	go func() {
 		for recv.Receive() {
 			frameChan <- recv.Frame()
-			return // Only receive one frame for this test
 		}
 	}()
 
+	frame := go_can.Frame{
+		ID:     0x123,
+		Length: 8,
+		Data:   go_can.Data{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08},
+	}
+
+	sendConn, err := socketcan.DialContext(t.Context(), "can", "vcan0")
+	require.NoError(t, err)
+
+	// Send message
+	tx := socketcan.NewTransmitter(sendConn)
+	err = tx.TransmitFrame(t.Context(), frame)
+	require.NoError(t, err)
+
 	// Wait for frame or timeout
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
 	select {
 	case receivedFrame := <-frameChan:
 		assert.Equal(t, receivedFrame.ID, uint32(0x123))
