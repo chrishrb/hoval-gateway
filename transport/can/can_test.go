@@ -22,7 +22,7 @@ func TestNewCAN(t *testing.T) {
 
 	// Channel to receive the frame
 	frameChan := make(chan go_can.Frame, 1)
-	
+
 	// Start receiver in goroutine
 	go func() {
 		for recv.Receive() {
