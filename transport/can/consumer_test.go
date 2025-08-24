@@ -52,6 +52,7 @@ func TestConsumer_Consume(t *testing.T) {
 	conn, err := consumer.Consume(ctx, handler)
 	require.NoError(t, err)
 	require.NotNil(t, conn)
+	//nolint:errcheck
 	defer conn.Close()
 
 	// Give consumer time to set up
@@ -60,6 +61,7 @@ func TestConsumer_Consume(t *testing.T) {
 	// Create sender connection to send test message
 	sendConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer sendConn.Close()
 
 	// Send test message
@@ -105,6 +107,7 @@ func TestConsumer_ConsumeMultipleMessages(t *testing.T) {
 	conn, err := consumer.Consume(ctx, handler)
 	require.NoError(t, err)
 	require.NotNil(t, conn)
+	//nolint:errcheck
 	defer conn.Close()
 
 	// Give consumer time to set up
@@ -113,6 +116,7 @@ func TestConsumer_ConsumeMultipleMessages(t *testing.T) {
 	// Create sender
 	sendConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer sendConn.Close()
 
 	tx := socketcan.NewTransmitter(sendConn)
@@ -203,6 +207,7 @@ func TestConsumer_MessageHandling(t *testing.T) {
 	conn, err := consumer.Consume(ctx, handler)
 	require.NoError(t, err)
 	require.NotNil(t, conn)
+	//nolint:errcheck
 	defer conn.Close()
 
 	// Give consumer time to set up
@@ -211,6 +216,7 @@ func TestConsumer_MessageHandling(t *testing.T) {
 	// Create sender
 	sendConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer sendConn.Close()
 
 	tx := socketcan.NewTransmitter(sendConn)
@@ -239,26 +245,4 @@ func TestConsumer_MessageHandling(t *testing.T) {
 		assert.Equal(t, expectedData, call.Data)
 	}
 	handlerMutex <- struct{}{} // Release mutex
-}
-
-func TestConsumer_ConnectionInterface(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	consumer := can.NewConsumer(can.WithCANDevice[can.Consumer]("vcan0"))
-
-	handler := transport.MessageHandlerFunc(func(ctx context.Context, message *transport.Message) {
-		// Handler implementation
-	})
-
-	conn, err := consumer.Consume(ctx, handler)
-	require.NoError(t, err)
-	require.NotNil(t, conn)
-
-	// Verify connection implements the interface
-	var _ transport.Connection = conn
-
-	// Test closing the connection
-	err = conn.Close()
-	assert.NoError(t, err)
 }

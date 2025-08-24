@@ -38,6 +38,7 @@ func TestSender_Send(t *testing.T) {
 	// Create receiver to verify the message was sent
 	receiverConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer receiverConn.Close()
 
 	receiver := socketcan.NewReceiver(receiverConn)
@@ -100,6 +101,7 @@ func TestSender_SendMultipleMessages(t *testing.T) {
 	// Create receiver
 	receiverConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer receiverConn.Close()
 
 	receiver := socketcan.NewReceiver(receiverConn)
@@ -222,6 +224,7 @@ func TestSender_ConnectionReuse(t *testing.T) {
 	// Create receiver
 	receiverConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer receiverConn.Close()
 
 	receiver := socketcan.NewReceiver(receiverConn)
@@ -302,6 +305,7 @@ func TestSender_ConcurrentSend(t *testing.T) {
 	// Create receiver
 	receiverConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer receiverConn.Close()
 
 	receiver := socketcan.NewReceiver(receiverConn)
@@ -380,6 +384,7 @@ func TestSender_FrameProperties(t *testing.T) {
 	// Create receiver
 	receiverConn, err := socketcan.DialContext(ctx, "can", "vcan0")
 	require.NoError(t, err)
+	//nolint:errcheck
 	defer receiverConn.Close()
 
 	receiver := socketcan.NewReceiver(receiverConn)
