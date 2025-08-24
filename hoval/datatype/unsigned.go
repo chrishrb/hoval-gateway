@@ -57,5 +57,5 @@ func UnsignedFromBytes(t Type, data []byte, decimal int) (float64, error) {
 		return 0, ErrInvalidDataType
 	}
 
-	return roundFloat(val, RoundPrecision), nil
+	return RoundFloat(val, RoundPrecision), nil
 }

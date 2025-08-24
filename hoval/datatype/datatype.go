@@ -68,7 +68,7 @@ func FromBytes(t Type, data []byte, decimal int) (float64, error) {
 	return 0, fmt.Errorf("invalid data type: %v", t)
 }
 
-func roundFloat(val float64, precision uint) float64 {
+func RoundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
 }
