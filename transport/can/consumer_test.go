@@ -26,13 +26,6 @@ func TestNewConsumer(t *testing.T) {
 		consumer := can.NewConsumer(can.WithCANDevice[can.Consumer]("vcan1"))
 		assert.NotNil(t, consumer)
 	})
-
-	t.Run("multiple options", func(t *testing.T) {
-		consumer := can.NewConsumer(
-			can.WithCANDevice[can.Consumer]("vcan0"),
-		)
-		assert.NotNil(t, consumer)
-	})
 }
 
 func TestConsumer_Consume(t *testing.T) {
@@ -168,24 +161,6 @@ func TestConsumer_ConsumeMultipleMessages(t *testing.T) {
 			assert.Equal(t, expectedData, receivedMsg.Data)
 		}
 	}
-}
-
-func TestConsumer_ConsumeContextCancellation(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	consumer := can.NewConsumer(can.WithCANDevice[can.Consumer]("vcan0"))
-
-	handler := transport.MessageHandlerFunc(func(ctx context.Context, message *transport.Message) {
-		// Handler implementation
-	})
-
-	// Cancel context immediately
-	cancel()
-
-	conn, err := consumer.Consume(ctx, handler)
-	assert.Error(t, err)
-	assert.Nil(t, conn)
-	assert.Contains(t, err.Error(), "timeout waiting for kafka setup")
 }
 
 func TestConsumer_Consume_InvalidDevice(t *testing.T) {

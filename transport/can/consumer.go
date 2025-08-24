@@ -50,7 +50,7 @@ func (c *Consumer) Consume(ctx context.Context, handler transport.MessageHandler
 
 	select {
 	case <-ctx.Done():
-		return nil, errors.New("timeout waiting for kafka setup")
+		return nil, errors.New("timeout waiting for can setup")
 	default:
 		return conn, nil
 	}
