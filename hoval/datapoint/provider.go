@@ -78,9 +78,9 @@ func (d *CsvDatapointProvider) GetByName(name string) *Datapoint {
 	return &dp
 }
 
-// NewCsvDatapointProvider reads a CSV file and returns datapoint configurations
+// NewCsvDatapointProviderFromFileName reads a CSV file and returns datapoint configurations
 // indexed by different keys for efficient lookup
-func NewCsvDatapointProvider(filename string) (*CsvDatapointProvider, error) {
+func NewCsvDatapointProviderFromFileName(filename string) (*CsvDatapointProvider, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
@@ -93,6 +93,21 @@ func NewCsvDatapointProvider(filename string) (*CsvDatapointProvider, error) {
 		return nil, fmt.Errorf("failed to parse CSV file: %w", err)
 	}
 
+	return toProvider(datapoints)
+}
+
+// NewCsvDatapointProviderFromBytes reads bytes and returns datapoint configurations
+// indexed by different keys for efficient lookup
+func NewCsvDatapointProviderFromBytes(b []byte) (*CsvDatapointProvider, error) {
+	var datapoints []Datapoint
+	if err := gocsv.UnmarshalBytes(b, &datapoints); err != nil {
+		return nil, fmt.Errorf("failed to parse bytes: %w", err)
+	}
+
+	return toProvider(datapoints)
+}
+
+func toProvider(datapoints []Datapoint) (*CsvDatapointProvider, error) {
 	maps := &CsvDatapointProvider{
 		ByUnitID:   make(map[string][]Datapoint),
 		ByFunction: make(map[string]Datapoint),

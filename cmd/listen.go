@@ -24,7 +24,7 @@ var listenCmd = &cobra.Command{
 		canInterface, _ := cmd.Flags().GetString("interface")
 		mockFile, _ := cmd.Flags().GetString("mock-file")
 
-		dpProvider, err := datapoint.NewCsvDatapointProvider("config/datapoints.csv")
+		dpProvider, err := datapoint.NewCsvDatapointProviderFromFileName("config/datapoints.csv")
 		if err != nil {
 			return err
 		}

@@ -52,6 +52,8 @@ var startCmd = &cobra.Command{
 		periodicRequester := settings.PeriodicRequester
 		periodicRequester.Run(context.Background())
 
+		slog.Info("hoval-gateway started")
+
 		err = <-errCh
 
 		if transportConn != nil {

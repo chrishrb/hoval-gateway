@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"time"
+	_ "embed"
 
 	"github.com/chrishrb/hoval-gateway/api/pubsub"
 	mqtt2 "github.com/chrishrb/hoval-gateway/api/pubsub/mqtt"
@@ -18,6 +19,9 @@ import (
 	"github.com/chrishrb/hoval-gateway/transport/mock"
 	"k8s.io/utils/clock"
 )
+
+//go:embed datapoints.csv
+var datapointsFile []byte
 
 type HttpApiSettings struct {
 	Addr    string
@@ -59,7 +63,7 @@ func Configure(ctx context.Context, cfg *BaseConfig) (c *Config, err error) {
 		return nil, err
 	}
 
-	c.DatapointProvider, err = datapoint.NewCsvDatapointProvider("datapoints.csv")
+	c.DatapointProvider, err = datapoint.NewCsvDatapointProviderFromBytes(datapointsFile)
 	if err != nil {
 		return nil, err
 	}

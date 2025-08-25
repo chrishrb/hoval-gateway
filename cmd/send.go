@@ -88,7 +88,7 @@ var sendCmd = &cobra.Command{
 			)
 		}
 
-		dpProvider, err := datapoint.NewCsvDatapointProvider("config/datapoints.csv")
+		dpProvider, err := datapoint.NewCsvDatapointProviderFromFileName("config/datapoints.csv")
 		if err != nil {
 			return err
 		}
